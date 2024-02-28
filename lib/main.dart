@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'FlutterChat',
+      title: 'Batein Karo ',
       theme: ThemeData().copyWith(
         colorScheme: ColorScheme.fromSeed(
             seedColor: const Color.fromARGB(255, 47, 5, 153)),

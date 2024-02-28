@@ -1,11 +1,11 @@
 {
-    "name": "chat_app",
+    "name": "Batein Karo",
     "short_name": "chat_app",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#hexcode",
+    "theme_color": "#hexcode",
+    "description": "A chat app developed by Sanskar",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

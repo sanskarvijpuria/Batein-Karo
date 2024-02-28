@@ -33,6 +33,7 @@ class AuthFunctions {
           err.message ?? 'Authentication failed.',
           const Duration(seconds: 4),
         );
+        rethrow;
       }
     }
   }

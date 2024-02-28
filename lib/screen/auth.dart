@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:chat_app/functions/helper.dart';
 import 'package:chat_app/functions/auth_functions.dart';
 
-import 'package:chat_app/screen/chat.dart';
 import 'package:chat_app/widgets/user_image_picker.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -23,6 +22,15 @@ class _AuthScreenState extends State<AuthScreen> {
   String _enteredUsername = '';
   XFile? _selectedImage;
   bool _isAuthenticating = false;
+  double opacityLevel = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Durations.extralong4, () {
+      setState(() => opacityLevel = opacityLevel == 1 ? 0.0 : 1.0);
+    });
+  }
 
   void onPickImage(XFile? pickedImage) {
     _selectedImage = pickedImage;
@@ -42,14 +50,21 @@ class _AuthScreenState extends State<AuthScreen> {
 
     if (isValid) {
       _formKey.currentState!.save();
-      await authFunctions.authenticateUser(
-          _isLogin, _enteredEmail, _enteredPassword);
-      final String downloadURL =
-          await authFunctions.putFiletoFirebaseStorage(_selectedImage!);
-      await authFunctions.saveDataToFirestore(
-          downloadURL, _enteredEmail, _enteredUsername);
-
-      
+      setState(() {
+        _isAuthenticating = !_isAuthenticating;
+      });
+      try {
+        await authFunctions.authenticateUser(
+            _isLogin, _enteredEmail, _enteredPassword);
+        final String downloadURL =
+            await authFunctions.putFiletoFirebaseStorage(_selectedImage!);
+        await authFunctions.saveDataToFirestore(
+            downloadURL, _enteredEmail, _enteredUsername);
+      } on Exception catch (err) {
+        setState(() {
+          _isAuthenticating = !_isAuthenticating;
+        });
+      }
     }
   }
 
@@ -57,7 +72,7 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     if (_isLogin) {
       // Reason to add this here.
-      // When user select the image during signup flow and then click on "I have an accout button." then user will be reverted back to
+      // When user select the image during signup flow and then click on "I have an account button." then user will be reverted back to
       // email screen. But this variable now hold the values even though we are in login flow. Now if user go back to sign up follow
       // and without selecting image and entering any date then they not be shown image as image is already initalised. Hence this.
       _selectedImage = null;
@@ -74,7 +89,22 @@ class _AuthScreenState extends State<AuthScreen> {
                 margin: const EdgeInsets.only(
                     top: 30, bottom: 20, left: 20, right: 20),
                 width: 200,
-                child: Image.asset('images/chat.png'),
+                child: AnimatedOpacity(
+                  opacity: opacityLevel,
+                  duration: const Duration(seconds: 3),
+                  child: Image.asset('images/chat.png'),
+                ),
+              ),
+              AnimatedOpacity(
+                opacity: opacityLevel,
+                duration: const Duration(seconds: 2),
+                child: Text(
+                  "Hey Guys!!! Welcome to the Batein Karo.",
+                  style: TextStyle(
+                      fontSize:
+                          Theme.of(context).textTheme.headlineSmall!.fontSize,
+                      color: Theme.of(context).colorScheme.onSecondary),
+                ),
               ),
               Card(
                 margin: const EdgeInsets.all(20),
@@ -144,17 +174,19 @@ class _AuthScreenState extends State<AuthScreen> {
                             },
                           ),
                           const SizedBox(height: 12),
-                          ElevatedButton(
-                            onPressed: onSubmit,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context)
-                                  .colorScheme
-                                  .primaryContainer,
-                            ),
-                            child: Text(
-                              _isLogin ? "Login" : "Create an Account",
-                            ),
-                          ),
+                          _isAuthenticating
+                              ? const CircularProgressIndicator()
+                              : ElevatedButton(
+                                  onPressed: onSubmit,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Theme.of(context)
+                                        .colorScheme
+                                        .primaryContainer,
+                                  ),
+                                  child: Text(
+                                    _isLogin ? "Login" : "Create an Account",
+                                  ),
+                                ),
                           const SizedBox(
                             height: 5,
                           ),
