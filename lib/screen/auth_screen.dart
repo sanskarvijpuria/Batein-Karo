@@ -4,8 +4,7 @@ import 'package:image_picker/image_picker.dart';
 
 import 'package:chat_app/functions/helper.dart';
 import 'package:chat_app/functions/auth_functions.dart';
-
-import 'package:chat_app/widgets/user_image_picker.dart';
+import 'package:chat_app/widgets/sign_up.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -56,10 +55,12 @@ class _AuthScreenState extends State<AuthScreen> {
       try {
         await authFunctions.authenticateUser(
             _isLogin, _enteredEmail, _enteredPassword);
-        final String downloadURL =
-            await authFunctions.putFiletoFirebaseStorage(_selectedImage!);
-        await authFunctions.saveDataToFirestore(
-            downloadURL, _enteredEmail, _enteredUsername);
+        if (!_isLogin) {
+          final String downloadURL =
+              await authFunctions.putFiletoFirebaseStorage(_selectedImage!);
+          await authFunctions.saveDataToFirestore(
+              downloadURL, _enteredEmail, _enteredUsername);
+        }
       } on Exception catch (err) {
         setState(() {
           _isAuthenticating = !_isAuthenticating;
@@ -70,6 +71,9 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Size mq = MediaQuery.of(context).size;
+    print(mq);
+
     if (_isLogin) {
       // Reason to add this here.
       // When user select the image during signup flow and then click on "I have an account button." then user will be reverted back to
@@ -88,18 +92,20 @@ class _AuthScreenState extends State<AuthScreen> {
               Container(
                 margin: const EdgeInsets.only(
                     top: 30, bottom: 20, left: 20, right: 20),
-                width: 200,
+                width: mq.width * 0.5,
+                height: mq.height * 0.2,
                 child: AnimatedOpacity(
                   opacity: opacityLevel,
                   duration: const Duration(seconds: 3),
-                  child: Image.asset('images/chat.png'),
+                  child: Image.asset('assets/images/chat.png'),
                 ),
               ),
               AnimatedOpacity(
                 opacity: opacityLevel,
                 duration: const Duration(seconds: 2),
                 child: Text(
-                  "Hey Guys!!! Welcome to the Batein Karo.",
+                  "Hey Guys!!! \n Welcome to the Batein Karo.",
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                       fontSize:
                           Theme.of(context).textTheme.headlineSmall!.fontSize,
@@ -117,28 +123,13 @@ class _AuthScreenState extends State<AuthScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (!_isLogin)
-                            UserPickedImage(onPickImage: onPickImage),
-                          if (!_isLogin)
-                            TextFormField(
-                              decoration: const InputDecoration(
-                                labelText: "Username",
-                              ),
-                              autocorrect: false,
-                              keyboardType: TextInputType.text,
-                              textCapitalization: TextCapitalization.none,
-                              enableSuggestions: false,
-                              onSaved: (newValue) {
-                                _enteredUsername = newValue!;
-                              },
-                              validator: (value) {
-                                if (value == null ||
-                                    value.trim().isEmpty ||
-                                    value.trim().length < 6) {
-                                  return "Please enter a valid username of with minimum length of 6 characters.";
-                                }
-                                return null;
-                              },
-                            ),
+                            // This is just for username and OnpicImage and if in future if we added more elements then we can
+                            // create a seprate widget tree.
+                            SignUp(
+                                onPickImage: onPickImage,
+                                onUsernameSaved: (newValue) {
+                                  _enteredUsername = newValue;
+                                }),
                           TextFormField(
                             decoration: const InputDecoration(
                               labelText: "Email Address",
@@ -173,7 +164,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               return null;
                             },
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: mq.height * 0.01),
                           _isAuthenticating
                               ? const CircularProgressIndicator()
                               : ElevatedButton(
@@ -187,9 +178,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                     _isLogin ? "Login" : "Create an Account",
                                   ),
                                 ),
-                          const SizedBox(
-                            height: 5,
-                          ),
+                          SizedBox(height: mq.height * 0.001),
                           TextButton(
                             onPressed: () {
                               setState(() {

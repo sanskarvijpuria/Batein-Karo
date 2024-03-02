@@ -7,14 +7,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'package:chat_app/functions/APIS.dart';
 import 'package:chat_app/functions/helper.dart';
 
 class AuthFunctions {
   AuthFunctions(this.context);
   final BuildContext context;
   late UserCredential userCredential;
-  final FirebaseFirestore db = FirebaseFirestore.instance;
-  final FirebaseAuth auth = FirebaseAuth.instance;
+  final db = APIs.db;
+  final auth = APIs.auth;
 
   Future<void> authenticateUser(
       bool isLogin, String enteredEmail, String enteredPassword) async {
@@ -40,7 +41,7 @@ class AuthFunctions {
 
   Future<String> putFiletoFirebaseStorage(XFile selectedImage) async {
     try {
-      final storageRef = FirebaseStorage.instance
+      final storageRef = APIs.storageRef
           .ref()
           .child('user_Image')
           .child(userCredential.user!.uid);
@@ -82,10 +83,16 @@ class AuthFunctions {
       };
       db.collection("users").doc(userCredential.user!.uid).set(data);
     } on Exception catch (err) {
+      await userCredential.user!.delete();
+      await APIs.storageRef
+          .ref()
+          .child('user_Image')
+          .child(userCredential.user!.uid)
+          .delete();
       if (context.mounted) {
         showSnackBarWithText(
           context,
-          "Image Could Not be Uploaded. Due to error: ${err.toString()}",
+          "Data could not be saved to firestore. Due to error: ${err.toString()}",
           const Duration(seconds: 5),
         );
       }

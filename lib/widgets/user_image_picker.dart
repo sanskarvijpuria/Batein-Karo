@@ -19,8 +19,7 @@ class _UserPickedImageState extends State<UserPickedImage> {
   void _pickImage({bool isCamera = true}) async {
     XFile? selectedImage;
     if (isCamera) {
-      selectedImage =
-          await ImagePicker().pickImage(source: ImageSource.camera);
+      selectedImage = await ImagePicker().pickImage(source: ImageSource.camera);
     } else {
       selectedImage = await ImagePicker().pickImage(
         source: ImageSource.gallery,
@@ -28,7 +27,7 @@ class _UserPickedImageState extends State<UserPickedImage> {
       );
     }
 
-    if(selectedImage == null){
+    if (selectedImage == null) {
       return;
     }
 
@@ -47,28 +46,38 @@ class _UserPickedImageState extends State<UserPickedImage> {
 
   @override
   Widget build(BuildContext context) {
-    Widget? circleAvatarChild = _pickedImage== null ? const Icon(Icons.person) : null;
-
+    Widget? circleAvatarChild =
+        _pickedImage == null ? const Icon(Icons.person) : null;
+    Size mq = MediaQuery.of(context).size;
+    const double sizeOfButton = 0.025;
     return Column(
       children: [
         CircleAvatar(
+          radius: mq.height * 0.079,
           foregroundImage: _pickedImage,
           child: circleAvatarChild,
         ),
         const SizedBox(
           height: 5,
         ),
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.center,
+        OverflowBar(
+          overflowAlignment: OverflowBarAlignment.center,
+          spacing: 5,
+          overflowSpacing: 2,
           children: [
             TextButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                _pickImage(isCamera: true);
+              },
               label: const Text(
                 "Take Photo",
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              icon: const Icon(Icons.camera),
+              icon: const Icon(
+                Icons.camera,
+              ),
             ),
             TextButton.icon(
               onPressed: () {
@@ -78,7 +87,9 @@ class _UserPickedImageState extends State<UserPickedImage> {
                 "Select Image From Gallery",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
-              icon: const Icon(Icons.photo),
+              icon: const Icon(
+                Icons.photo,
+              ),
             ),
           ],
         )
