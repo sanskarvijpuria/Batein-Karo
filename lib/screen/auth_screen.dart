@@ -57,7 +57,7 @@ class _AuthScreenState extends State<AuthScreen> {
             _isLogin, _enteredEmail, _enteredPassword);
         if (!_isLogin) {
           final String downloadURL =
-              await authFunctions.putFiletoFirebaseStorage(_selectedImage!);
+              await authFunctions.putProfilePicturetoFirebaseStorage(_selectedImage!);
           await authFunctions.saveDataToFirestore(
               downloadURL, _enteredEmail, _enteredUsername);
         }

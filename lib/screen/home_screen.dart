@@ -19,7 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: const Icon(CupertinoIcons.home),
-        elevation: 21,
+        elevation: 15,
         title: const Center(child: Text('Batein Karo')),
         actions: [
           IconButton(
@@ -37,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       body: StreamBuilder(
-          stream: APIs.db.collection("users").snapshots(),
+          stream: APIs.getAllUsersExceptMe(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting ||
                 snapshot.connectionState == ConnectionState.none) {

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:chat_app/functions/helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -17,15 +18,7 @@ class _UserPickedImageState extends State<UserPickedImage> {
   ImageProvider? _pickedImage;
 
   void _pickImage({bool isCamera = true}) async {
-    XFile? selectedImage;
-    if (isCamera) {
-      selectedImage = await ImagePicker().pickImage(source: ImageSource.camera);
-    } else {
-      selectedImage = await ImagePicker().pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 200,
-      );
-    }
+    XFile? selectedImage = await pickImageUsingImagePicker(isCamera: isCamera);
 
     if (selectedImage == null) {
       return;
@@ -33,10 +26,10 @@ class _UserPickedImageState extends State<UserPickedImage> {
 
     setState(() {
       if (kIsWeb) {
-        _pickedImage = Image.network(selectedImage!.path).image;
+        _pickedImage = Image.network(selectedImage.path).image;
       } else {
         _pickedImage = FileImage(
-          File(selectedImage!.path),
+          File(selectedImage.path),
         );
       }
     });
@@ -49,7 +42,6 @@ class _UserPickedImageState extends State<UserPickedImage> {
     Widget? circleAvatarChild =
         _pickedImage == null ? const Icon(Icons.person) : null;
     Size mq = MediaQuery.of(context).size;
-    const double sizeOfButton = 0.025;
     return Column(
       children: [
         CircleAvatar(

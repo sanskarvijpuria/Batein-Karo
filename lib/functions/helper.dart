@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
 
 void showSnackBarWithText(
     BuildContext context, String text, Duration duration) {
@@ -8,6 +10,10 @@ void showSnackBarWithText(
     SnackBar(
       content: Text(text),
       duration: duration,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
     ),
   );
 }
@@ -29,3 +35,16 @@ DateTime? convertTimestamp(Timestamp? timestamp) {
 Timestamp? convertDateTime(DateTime? dateTime) {
   return dateTime != null ? Timestamp.fromDate(dateTime) : null;
 }
+
+  Future<XFile?> pickImageUsingImagePicker({bool isCamera = true}) async {
+    XFile? selectedImage;
+    if (isCamera) {
+      selectedImage = await ImagePicker().pickImage(source: ImageSource.camera);
+    } else {
+      selectedImage = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 200,
+      );
+    }
+    return selectedImage;
+  }

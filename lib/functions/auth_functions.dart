@@ -1,10 +1,6 @@
-import 'dart:io' as io;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:chat_app/functions/APIS.dart';
@@ -39,25 +35,10 @@ class AuthFunctions {
     }
   }
 
-  Future<String> putFiletoFirebaseStorage(XFile selectedImage) async {
+  Future<String> putProfilePicturetoFirebaseStorage(XFile selectedImage) async {
     try {
-      final storageRef = APIs.storageRef
-          .ref()
-          .child('user_Image')
-          .child(userCredential.user!.uid);
-      final metadata = SettableMetadata(
-        contentType: 'image/jpeg',
-        customMetadata: {'picked-file-path': selectedImage.path},
-      );
-      UploadTask uploadTask;
-      if (kIsWeb) {
-        final dataa = await selectedImage.readAsBytes();
-        uploadTask = storageRef.putData(dataa, metadata);
-      } else {
-        uploadTask = storageRef.putFile(io.File(selectedImage.path), metadata);
-      }
-      final snapshot = await uploadTask.whenComplete(() => null);
-      final String downloadURL = await snapshot.ref.getDownloadURL();
+      String downloadURL = await APIs.putFiletoFirebaseStorage(
+          selectedImage, 'user_Image', userCredential.user!.uid);
       return downloadURL;
     } on Exception catch (err) {
       userCredential.user!.delete();

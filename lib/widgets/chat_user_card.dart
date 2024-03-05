@@ -35,7 +35,6 @@ class _ChatUserCardState extends State<ChatUserCard> {
           ),
           trailing: const Text(
             "12:00 PM",
-            style: TextStyle(color: Colors.black54),
           ),
         ),
       ),
