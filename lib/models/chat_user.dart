@@ -31,9 +31,9 @@ class ChatUser {
     email = json['email'] ?? '';
     name = json['name'] ?? '';
     about = json['about'] ?? '';
-    createdAt = json['created_at']  == null ? null : convertTimestamp( json['created_at'] );
+    createdAt = json['created_at']  == null ? null : convertTimestamptoDatetime( json['created_at'] );
     isOnline = json['is_online'];
-    lastActive =  json['last_active']  == null ? null : convertTimestamp( json['crealast_activeted_at'] );
+    lastActive =  json['last_active']  == null ? null : convertTimestamptoDatetime( json['crealast_activeted_at'] );
     pushToken = json['push_token'] ?? '';
   }
 

@@ -2,16 +2,16 @@ import 'dart:io';
 
 import 'package:chat_app/functions/APIS.dart';
 import 'package:chat_app/functions/helper.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:chat_app/models/chat_user.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key, required this.user});
+  const ProfileScreen(this.currentUser, {super.key});
 
-  final User user;
+  final ChatUser currentUser;
 
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
@@ -109,7 +109,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (selectedImage != null) {
       if (downloadURL == null) {
         downloadURL = await APIs.putFiletoFirebaseStorage(selectedImage!,
-            "user-Images", widget.user.uid + DateTime.now().toString());
+            "user-Images", widget.currentUser.uid + DateTime.now().toString());
         print(downloadURL);
       }
       updateUserData("user_image", downloadURL!, "", isImage: true);
@@ -125,8 +125,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     try {
-      print("Logs: Profile Update user data: $userData , ${widget.user.uid}");
-      await APIs.updateUserData(userData, widget.user.uid);
+      print("Logs: Profile Update user data: $userData , ${widget.currentUser.uid}");
+      await APIs.updateUserData(userData, widget.currentUser.uid);
       if (context.mounted) {
         showSnackBarWithText(
             context, "Your Data is saved.", const Duration(seconds: 3));
@@ -176,15 +176,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Column(
                           children: [
                             _buildProfilePicture(snapshot),
-                            SizedBox(height: mq.height * 0.025),
+                            SizedBox(height: mq.height * 0.03),
                             // USERNAME
                             _buildUsernameField(snapshot, context),
-                            SizedBox(height: mq.height * 0.02),
+                            SizedBox(height: mq.height * 0.025),
                             // NAME
                             _buildNameField(snapshot),
-                            SizedBox(height: mq.height * 0.02),
+                            SizedBox(height: mq.height * 0.025),
                             _buildAboutField(snapshot),
-                            SizedBox(height: mq.height * 0.02),
+                            SizedBox(height: mq.height * 0.025),
                             _buildEmailField(snapshot),
                             // Save button with funny text
                             SizedBox(height: mq.height * 0.025),

@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
+import 'package:intl/intl.dart';
+import 'package:crypto/crypto.dart';
 
 void showSnackBarWithText(
     BuildContext context, String text, Duration duration) {
@@ -11,9 +14,6 @@ void showSnackBarWithText(
       content: Text(text),
       duration: duration,
       behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
-            ),
     ),
   );
 }
@@ -24,27 +24,43 @@ bool isEmailValid(String enteredEmail) {
   return isMatchingWithRegex(enteredEmail, regexPatterForEmail);
 }
 
-bool isMatchingWithRegex(String value, String regexString){
+bool isMatchingWithRegex(String value, String regexString) {
   return RegExp(regexString.trim()).hasMatch(value);
 }
 
-DateTime? convertTimestamp(Timestamp? timestamp) {
-  return timestamp?.toDate();
+DateTime convertTimestamptoDatetime(Timestamp timestamp) {
+  return timestamp.toDate();
 }
 
-Timestamp? convertDateTime(DateTime? dateTime) {
+Timestamp? convertDateTimetoTomestamp(DateTime? dateTime) {
   return dateTime != null ? Timestamp.fromDate(dateTime) : null;
 }
 
-  Future<XFile?> pickImageUsingImagePicker({bool isCamera = true}) async {
-    XFile? selectedImage;
-    if (isCamera) {
-      selectedImage = await ImagePicker().pickImage(source: ImageSource.camera);
-    } else {
-      selectedImage = await ImagePicker().pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 200,
-      );
-    }
-    return selectedImage;
+Timestamp convertStringToTimestamp(String dateTimeString) {
+  final dateTime = DateTime.parse(dateTimeString);
+  return Timestamp.fromDate(dateTime);
+}
+
+String extractTimeFromDateTime(DateTime datetime) {
+  return DateFormat("HH:mm").format(datetime);
+}
+
+Future<XFile?> pickImageUsingImagePicker({bool isCamera = true}) async {
+  XFile? selectedImage;
+  if (isCamera) {
+    selectedImage = await ImagePicker().pickImage(source: ImageSource.camera);
+  } else {
+    selectedImage = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+    );
   }
+  return selectedImage;
+}
+
+String generateHash(String s1, String s2) {
+  String sortedString = (<String>[s1, s2]..sort()).join();
+  var bytes = utf8.encode(sortedString);
+  String generatedHash = md5.convert(bytes).toString();
+  print("Generating hash: $s1, $s2, $generatedHash");
+  return generatedHash;
+}

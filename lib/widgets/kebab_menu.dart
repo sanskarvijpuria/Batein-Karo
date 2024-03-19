@@ -1,13 +1,13 @@
 import 'package:chat_app/functions/APIS.dart';
+import 'package:chat_app/models/chat_user.dart';
 import 'package:chat_app/screen/profile_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class KebabMenu extends StatelessWidget {
   /* We can change change it to accept the list of Button Text and Button function and then lay the menu accordingly.
   If needed otherwise till then this should work. */
-  const KebabMenu({super.key, required this.user});
-  final User user;
+  const KebabMenu(this.currentUser, {super.key});
+  final ChatUser currentUser;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class KebabMenu extends StatelessWidget {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => ProfileScreen(
-                  user: user,
+                  currentUser,
                 ),
               ),
             );

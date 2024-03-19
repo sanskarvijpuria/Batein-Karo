@@ -15,6 +15,7 @@ class SignUp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Size mq = MediaQuery.of(context).size;
     return Column(
       children: [
         UserPickedImage(onPickImage: onPickImage),
@@ -41,6 +42,7 @@ class SignUp extends StatelessWidget {
             return null;
           },
         ),
+        SizedBox(height: mq.height * 0.02),
       ],
     );
   }

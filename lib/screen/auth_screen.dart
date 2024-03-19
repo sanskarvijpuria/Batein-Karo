@@ -56,12 +56,12 @@ class _AuthScreenState extends State<AuthScreen> {
         await authFunctions.authenticateUser(
             _isLogin, _enteredEmail, _enteredPassword);
         if (!_isLogin) {
-          final String downloadURL =
-              await authFunctions.putProfilePicturetoFirebaseStorage(_selectedImage!);
+          final String downloadURL = await authFunctions
+              .putProfilePicturetoFirebaseStorage(_selectedImage!);
           await authFunctions.saveDataToFirestore(
               downloadURL, _enteredEmail, _enteredUsername);
         }
-      } on Exception catch (err) {
+      } on Exception {
         setState(() {
           _isAuthenticating = !_isAuthenticating;
         });
@@ -149,6 +149,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               return null;
                             },
                           ),
+                          SizedBox(height: mq.height * 0.02),
                           TextFormField(
                             decoration: const InputDecoration(
                               labelText: "Password",
@@ -164,7 +165,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               return null;
                             },
                           ),
-                          SizedBox(height: mq.height * 0.01),
+                          SizedBox(height: mq.height * 0.02),
                           _isAuthenticating
                               ? const CircularProgressIndicator()
                               : ElevatedButton(
@@ -178,7 +179,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                     _isLogin ? "Login" : "Create an Account",
                                   ),
                                 ),
-                          SizedBox(height: mq.height * 0.001),
+                          SizedBox(height: mq.height * 0.01),
                           TextButton(
                             onPressed: () {
                               setState(() {

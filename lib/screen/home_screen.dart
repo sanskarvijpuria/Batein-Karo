@@ -1,9 +1,12 @@
 import 'package:chat_app/functions/APIS.dart';
 import 'package:chat_app/models/chat_user.dart';
+import 'package:chat_app/models/recent_chats.dart';
 import 'package:chat_app/widgets/chat_user_card.dart';
 import 'package:chat_app/widgets/kebab_menu.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,9 +16,72 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool isLoading = false; // Flag for loading state
+  List<List<dynamic>> recentUserDataWithLastMessage = [];
+  Set<String> recentChatsUid = {};
+  bool isRecentMessageUpdated = false;
+  DocumentSnapshot<Map<String, dynamic>>? _previousStreamData;
+
+  @override
+  void initState() {
+    super.initState();
+    _getSelfData();
+  }
+
+  List<dynamic> sortUsersByLastMessageTime(List<dynamic> listOfDict) {
+    listOfDict.sort((a, b) {
+      final timeA = a.values.first["time"] as Timestamp;
+      final timeB = b.values.first["time"] as Timestamp;
+      return timeB.compareTo(timeA);
+    });
+    return listOfDict;
+  }
+
+  Future<void> _recentChatUserData(List<dynamic> recentChatUserData) async {
+    List<dynamic> sortedRecentUserList =
+        sortUsersByLastMessageTime(recentChatUserData);
+    List<List<dynamic>> chats = [];
+    for (var data in sortedRecentUserList) {
+      String userUID = data.keys.toList()[0];
+      final userData = await APIs.getParticularUserData(userUID);
+      chats.add(
+          [ChatUser.fromJson(userData), LastMessage.fromJson(data[userUID])]);
+      recentChatsUid.add(userUID);
+    }
+    setState(() {
+      recentUserDataWithLastMessage = chats;
+    });
+  }
+
+  Future<void> _getSelfData() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      ChatUser fetchedUser = await APIs.getSelfData();
+      setState(() {
+        currentUser = fetchedUser;
+        isLoading = false;
+      });
+    } catch (error) {
+      print("Error fetching user data: $error");
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Size mq = MediaQuery.of(context).size;
+    Function eq = const DeepCollectionEquality.unordered().equals;
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         leading: const Icon(CupertinoIcons.home),
@@ -26,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {},
             icon: const Icon(CupertinoIcons.search),
           ),
-          KebabMenu(user: APIs.auth.currentUser!),
+          KebabMenu(currentUser!),
         ],
       ),
       floatingActionButton: Padding(
@@ -37,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       body: StreamBuilder(
-          stream: APIs.getAllUsersExceptMe(),
+          stream: APIs.getAllRecentUsers(currentUser!.uid),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting ||
                 snapshot.connectionState == ConnectionState.none) {
@@ -45,26 +111,49 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: CircularProgressIndicator(),
               );
             } else {
-              final listOfUsers = snapshot.data?.docs;
-              var list = listOfUsers
-                      ?.map((e) => ChatUser.fromJson(e.data()))
-                      .toList() ??
-                  [];
-              if (list.isNotEmpty) {
+              // print(snapshot.data?.data());
+              // print(currentUser!.uid);
+              final currentStreamData = snapshot.data;
+              if (snapshot.data!.data() != null &&
+                  snapshot.data!.get("to_uids") != []) {
+                // List<dynamic> listOfUsers = snapshot.data!
+                //     .get("to_uids")
+                //     .map((dict) => dict.keys.first)
+                //     .toList();
+                // print("$listOfUsers, ${recentChatsUid.toList()}");
+                // print(snapshot.data!.get("to_uids"));
+                // if (!eq(listOfUsers, recentChatsUid.toList())) {
+                //   _recentChatUserData(snapshot.data!.get("to_uids"));
+                // }
+                if (!eq(
+                    currentStreamData?.data(), _previousStreamData?.data())) {
+                  _previousStreamData = currentStreamData;
+                  _recentChatUserData(snapshot.data!.get("to_uids"));
+                }
+              }
+              if (recentUserDataWithLastMessage.isNotEmpty) {
                 return ListView.builder(
-                  itemCount: list.length,
+                  itemCount: recentUserDataWithLastMessage.length,
                   padding: EdgeInsets.symmetric(vertical: mq.height * 0.01),
                   physics: const BouncingScrollPhysics(),
                   itemBuilder: (context, index) {
                     return ChatUserCard(
                       mq: mq,
-                      chatUser: list[index],
+                      chatUser: recentUserDataWithLastMessage[index][0],
+                      lastMessage: recentUserDataWithLastMessage[index][1],
                     );
                   },
                 );
               } else {
                 return const Center(
-                  child: Text("No Chats Found"),
+                  child: Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      "Bhaii chat dhikane ke liye bhi kisi se bat karni padegi.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 20),
+                    ),
+                  ),
                 );
               }
             }
