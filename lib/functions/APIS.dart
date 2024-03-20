@@ -16,6 +16,8 @@ class APIs {
   static FirebaseAuth auth = FirebaseAuth.instance;
   static FirebaseStorage storageRef = FirebaseStorage.instance;
 
+  // ****************** User Data Get and Update *********************
+
   static Future<Map<String, dynamic>> getParticularUserData(String uid) async {
     try {
       DocumentSnapshot userSnapshot =
@@ -30,6 +32,13 @@ class APIs {
       print('Error getting user data: $e');
       return {};
     }
+  }
+
+  static Stream<DocumentSnapshot<Map<String, dynamic>>>
+      getParticularUserSnapshot(String uid) {
+    Stream<DocumentSnapshot<Map<String, dynamic>>> snapshot =
+        db.collection("users").doc(uid).snapshots();
+    return snapshot;
   }
 
   static Future<ChatUser> getSelfData() async {
@@ -51,6 +60,15 @@ class APIs {
       Map<String, dynamic> userData, String uid) {
     return db.collection("users").doc(uid).update(userData);
   }
+
+  static Future<void> updateUserOnlineStatus(String uid, bool isOnline) async {
+    final docRef = db
+        .collection('users')
+        .doc(uid)
+        .update({'is_online': isOnline, 'last_active': Timestamp.now()});
+  }
+
+  // ****************** Cloud Storage upload Profile Pic and Chat Images *********************
 
   static Future<String> putFiletoFirebaseStorage(
       XFile selectedImage, String collectionName, String fileName) async {

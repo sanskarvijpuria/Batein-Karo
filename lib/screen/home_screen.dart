@@ -1,12 +1,13 @@
 import 'package:chat_app/functions/APIS.dart';
 import 'package:chat_app/models/chat_user.dart';
 import 'package:chat_app/models/recent_chats.dart';
-import 'package:chat_app/widgets/chat_user_card.dart';
+import 'package:chat_app/widgets/home_screen_user_card.dart';
 import 'package:chat_app/widgets/kebab_menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter/services.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,10 +26,28 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _getSelfData();
+    _getSelfData().then((value) {
+      APIs.updateUserOnlineStatus(
+          currentUser!.uid, true); // For the first time setting it as true;
+    });
+
+    SystemChannels.lifecycle.setMessageHandler((message) {
+      print('System Message: ${message.toString()}');
+
+      if (currentUser != null && message != null) {
+        if (message.toString().toLowerCase().contains("resume")) {
+          APIs.updateUserOnlineStatus(currentUser!.uid, true);
+        }
+        if (message.toLowerCase().contains("pause")) {
+          APIs.updateUserOnlineStatus(currentUser!.uid, false);
+        }
+      }
+      return Future.value(message);
+    });
   }
 
   List<dynamic> sortUsersByLastMessageTime(List<dynamic> listOfDict) {
+    // Sorts the list of dictionaries by the 'time' value of the inner dictionary and returns the sorted list.
     listOfDict.sort((a, b) {
       final timeA = a.values.first["time"] as Timestamp;
       final timeB = b.values.first["time"] as Timestamp;
@@ -38,6 +57,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _recentChatUserData(List<dynamic> recentChatUserData) async {
+    // A function that takes a list of dynamic recent chat user data, sorts them by last message time,
+    // retrieves particular user data using APIs, constructs chat user and last message objects,
+    // then updates the state with the recent user data and last messages.
     List<dynamic> sortedRecentUserList =
         sortUsersByLastMessageTime(recentChatUserData);
     List<List<dynamic>> chats = [];
@@ -54,6 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _getSelfData() async {
+    // A function that retrieves the current user's data asynchronously and updates the UI accordingly.
     setState(() {
       isLoading = true;
     });
@@ -92,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {},
             icon: const Icon(CupertinoIcons.search),
           ),
-          KebabMenu(currentUser!),
+          const KebabMenu(),
         ],
       ),
       floatingActionButton: Padding(
@@ -137,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: EdgeInsets.symmetric(vertical: mq.height * 0.01),
                   physics: const BouncingScrollPhysics(),
                   itemBuilder: (context, index) {
-                    return ChatUserCard(
+                    return HomeScreenChatUserCard(
                       mq: mq,
                       chatUser: recentUserDataWithLastMessage[index][0],
                       lastMessage: recentUserDataWithLastMessage[index][1],

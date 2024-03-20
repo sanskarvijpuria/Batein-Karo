@@ -45,16 +45,55 @@ String extractTimeFromDateTime(DateTime datetime) {
   return DateFormat("HH:mm").format(datetime);
 }
 
-Future<XFile?> pickImageUsingImagePicker({bool isCamera = true}) async {
+String formatLastSeen(DateTime lastSeen) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final yesterday = DateTime(now.year, now.month, now.day - 1);
+
+  if (lastSeen.isAfter(today)) {
+    return 'Last seen today at ${DateFormat('HH:mm').format(lastSeen)}';
+  } else if (lastSeen.isAfter(yesterday)) {
+    return 'Last seen yesterday at ${DateFormat('HH:mm').format(lastSeen)}';
+  } else if (now.year == lastSeen.year) {
+    return 'Last seen on ${DateFormat('d MMM').format(lastSeen)}';
+  } else {
+    return 'Last seen on ${DateFormat('d MMM y').format(lastSeen)}';
+  }
+}
+
+String formatLastMessageTimeForRecentMessage(DateTime lastSeen) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final yesterday = DateTime(now.year, now.month, now.day - 1);
+
+  if (lastSeen.isAfter(today)) {
+    return DateFormat('HH:mm').format(lastSeen);
+  } else if (lastSeen.isAfter(yesterday)) {
+    return 'Yesterday';
+  } else {
+    return DateFormat('d/MM/y').format(lastSeen);
+  }
+}
+
+Future<XFile?> pickImageUsingImagePicker(
+    {bool isCamera = true, int imageQuality = 100}) async {
   XFile? selectedImage;
   if (isCamera) {
-    selectedImage = await ImagePicker().pickImage(source: ImageSource.camera);
+    selectedImage = await ImagePicker()
+        .pickImage(source: ImageSource.camera, imageQuality: imageQuality);
   } else {
-    selectedImage = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
-    );
+    selectedImage = await ImagePicker()
+        .pickImage(source: ImageSource.gallery, imageQuality: imageQuality);
   }
   return selectedImage;
+}
+
+Future<List<XFile>> pickMultiImageUsingImagePicker(
+    {int imageQuality = 100}) async {
+  List<XFile> selectedImages;
+  selectedImages =
+      await ImagePicker().pickMultiImage(imageQuality: imageQuality);
+  return selectedImages;
 }
 
 String generateHash(String s1, String s2) {

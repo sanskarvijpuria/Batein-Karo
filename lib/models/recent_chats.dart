@@ -5,8 +5,14 @@ class LastMessage {
   DateTime? time;
   bool? isRead;
   String? senderId;
+  String type;
 
-  LastMessage({this.content, this.time, this.isRead, this.senderId});
+  LastMessage(
+      {required this.content,
+      required this.time,
+      required this.isRead,
+      required this.senderId,
+      this.type = 'text'});
 
   Map<String, dynamic> toJson() {
     if (content != null) {
@@ -14,7 +20,8 @@ class LastMessage {
         'content': content,
         'time': convertDateTimetoTomestamp(time),
         'is_read': isRead,
-        'sender_id': senderId
+        'sender_id': senderId,
+        'type': type
       };
     } else {
       return {};
@@ -23,11 +30,11 @@ class LastMessage {
 
   factory LastMessage.fromJson(Map<String, dynamic> json) {
     return LastMessage(
-      content: json['content'],
-      time: convertTimestamptoDatetime(json['time']),
-      isRead: json['is_read'],
-      senderId: json['sender_id']
-    );
+        content: json['content'],
+        time: convertTimestamptoDatetime(json['time']),
+        isRead: json['is_read'],
+        type: json['type'],
+        senderId: json['sender_id']);
   }
 }
 

@@ -20,7 +20,7 @@ class ChatUser {
   late final String name;
   late final String about;
   late final DateTime? createdAt;
-  late final bool? isOnline;
+  late final bool isOnline;
   late final DateTime? lastActive;
   late final String pushToken;
   
@@ -32,8 +32,8 @@ class ChatUser {
     name = json['name'] ?? '';
     about = json['about'] ?? '';
     createdAt = json['created_at']  == null ? null : convertTimestamptoDatetime( json['created_at'] );
-    isOnline = json['is_online'];
-    lastActive =  json['last_active']  == null ? null : convertTimestamptoDatetime( json['crealast_activeted_at'] );
+    isOnline = json['is_online'] ?? false;
+    lastActive =  json['last_active']  == null ? null : convertTimestamptoDatetime( json['last_active'] );
     pushToken = json['push_token'] ?? '';
   }
 

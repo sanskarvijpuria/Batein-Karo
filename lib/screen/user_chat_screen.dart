@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_app/functions/APIS.dart';
 import 'package:chat_app/functions/helper.dart';
 import 'package:chat_app/models/chat_messages.dart';
@@ -11,10 +12,10 @@ import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 
 class UserChatScreen extends StatefulWidget {
-  const UserChatScreen(this.toUser,
-      {super.key});
+  const UserChatScreen(this.toUser, {super.key});
 
   final ChatUser toUser;
 
@@ -25,12 +26,16 @@ class UserChatScreen extends StatefulWidget {
 class _UserChatScreenState extends State<UserChatScreen> {
   final TextEditingController _textController = TextEditingController();
   late Stream _myStream;
-  bool isMessageFound = false;
   String hash = "";
-  bool toUpdateRecentMessage = false;
-  bool _emojiShowing = false;
+  bool _emojiShowing = false,
+      _isUploading = false,
+      toUpdateRecentMessage = false,
+      isMessageFound = false;
   List<Message> list = [];
   Message? lastMessageSentByCurrentUser;
+  XFile? selectedImage;
+  List<XFile> selectedImages = [];
+  String? downloadURL;
   final List<String> hintMessages = [
     "Feeling chatty? Spill the tea!",
     "Words of wisdom or witty banter?",
@@ -56,7 +61,11 @@ class _UserChatScreenState extends State<UserChatScreen> {
   }
 
   Future<void> marktheUnreadMessages(
-      List<Message> messages, String hash) async {
+      // Marks the unread messages as read for the given list of messages and hash.
+      // It iterates through the messages, marks each unread message as read using the APIs.markMessageRead method,
+      // and updates the recent message for both users if the message is the last one in the list.
+      List<Message> messages,
+      String hash) async {
     print("heree");
     lastMessageSentByCurrentUser = messages.reversed.last;
     for (Message message in messages.reversed) {
@@ -72,11 +81,98 @@ class _UserChatScreenState extends State<UserChatScreen> {
   }
 
   LastMessage messageToLastMessage(Message message) {
+    // Converts a Message object to a LastMessage object by extracting its content, senderId, seen status, and sentAt time.
     return LastMessage(
         content: message.content,
         senderId: message.senderId,
         isRead: message.seen,
-        time: message.sentAt);
+        time: message.sentAt,
+        type: message.type);
+  }
+
+  void _pickImageAndUpload({bool isCamera = true}) async {
+    // A function to pick an image either from the camera or gallery and send it to Firebase storage.
+    if (isCamera) {
+      XFile? temp = await pickImageUsingImagePicker(isCamera: isCamera);
+      if (temp != null) {
+        selectedImages.add(temp);
+      }
+    } else {
+      selectedImages = await pickMultiImageUsingImagePicker();
+    }
+    if (selectedImages.isEmpty) {
+      return;
+    } else {
+      for (XFile image in selectedImages) {
+        setState(() {
+          _isUploading = true;
+        });
+        DateTime currentTime = DateTime.now();
+        String downloadURL = await APIs.putFiletoFirebaseStorage(
+            image,
+            "chats/$hash",
+            currentUser!.uid + currentTime.microsecondsSinceEpoch.toString());
+        print(downloadURL);
+        _createAndSendMessage(downloadURL, type: "image");
+        setState(() {
+          _isUploading = false;
+        });
+      }
+    }
+  }
+
+  void _createAndSendMessage(String content, {String type = "text"}) {
+    /// Creates and sends a message (that is stored on Firestore) with the given content and optional type.
+    ///
+    /// Parameters:
+    ///   - content: The content of the message.
+    ///   - type: The type of the message. Defaults to "text".
+    ///
+    /// Returns: None
+    DateTime currentTime = DateTime.now();
+    final Message message = Message(
+        messageId: currentTime.microsecondsSinceEpoch.toString(),
+        senderId: currentUser!.uid,
+        content: content,
+        sentAt: currentTime,
+        type: type);
+    APIs.sendMessage(hash, message);
+    toUpdateRecentMessage = true;
+    lastMessageSentByCurrentUser = message;
+  }
+
+  void _selectImage() {
+    // Displays a modal bottom sheet with two image buttons: one for taking a photo and one for selecting an image from the gallery.
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.background,
+      elevation: 0,
+      barrierColor: Theme.of(context).colorScheme.onBackground.withOpacity(0.3),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildImageButton(
+              assetPath: "assets/images/camera.gif",
+              text: "Take Photo",
+              onPressed: () {
+                _pickImageAndUpload(isCamera: true);
+                Navigator.pop(context);
+              },
+            ),
+            _buildImageButton(
+              assetPath: "assets/images/gallery.gif",
+              text: "Select From Gallery",
+              onPressed: () {
+                _pickImageAndUpload(isCamera: false);
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -150,6 +246,13 @@ class _UserChatScreenState extends State<UserChatScreen> {
                     }
                   }
                 }),
+            if (_isUploading)
+              const Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+                      child: CircularProgressIndicator(strokeWidth: 2))),
             _buildchatInput(hash),
             if (_emojiShowing) _selectEmoji(),
           ],
@@ -161,26 +264,54 @@ class _UserChatScreenState extends State<UserChatScreen> {
   AppBar _buildAppBar(Size mq) {
     return AppBar(
       elevation: 15,
-      title: Row(
-        children: [
-          CircleAvatar(
-            backgroundImage: NetworkImage(
-              widget.toUser.userImage,
-            ),
-          ),
-          SizedBox(
-            width: mq.width * 0.02,
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(widget.toUser.name,
-                  style: Theme.of(context).textTheme.titleLarge),
-              Text(widget.toUser.userName,
-                  style: Theme.of(context).textTheme.titleSmall),
-            ],
-          )
-        ],
+      titleSpacing: 0,
+      title: StreamBuilder(
+        stream: APIs.getParticularUserSnapshot(widget.toUser.uid),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting ||
+              snapshot.connectionState == ConnectionState.none) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else {
+            // print(snapshot.data?.data());
+            // print(currentUser!.uid);
+            // final currentStreamData = snapshot.data;
+            if (snapshot.data!.data() != null) {
+              final currentStreamData =
+                  ChatUser.fromJson(snapshot.data!.data()!);
+              return Row(
+                children: [
+                  CircleAvatar(
+                    backgroundImage:
+                        CachedNetworkImageProvider(currentStreamData.userImage),
+                  ),
+                  SizedBox(
+                    width: mq.width * 0.03,
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(currentStreamData.name,
+                          style: Theme.of(context).textTheme.titleLarge),
+                      Text(
+                          (currentStreamData.isOnline)
+                              ? "Online"
+                              : formatLastSeen(currentStreamData.lastActive!),
+                          style: Theme.of(context).textTheme.titleSmall),
+                    ],
+                  )
+                ],
+              );
+            } else {
+              return const Expanded(
+                child: Center(
+                  child: Text("User could not be found."),
+                ),
+              );
+            }
+          }
+        },
       ),
       actions: const [
         Padding(
@@ -227,7 +358,15 @@ class _UserChatScreenState extends State<UserChatScreen> {
                         });
                       },
                       icon: const Icon(Icons.emoji_emotions)),
-                  suffixIcon: const Icon(Icons.attach_file_outlined),
+                  suffixIcon: IconButton(
+                      onPressed: () {
+                        _selectImage();
+                        // FocusManager.instance.primaryFocus?.unfocus();
+                        // setState(() {
+                        //   _emojiShowing = !_emojiShowing;
+                        // });
+                      },
+                      icon: const Icon(Icons.attach_file_outlined)),
                 ),
               ),
             ),
@@ -252,19 +391,45 @@ class _UserChatScreenState extends State<UserChatScreen> {
               if (value.trim().isEmpty) {
                 return;
               }
-              DateTime currentTime = DateTime.now();
-              final Message message = Message(
-                  messageId: currentTime.microsecondsSinceEpoch.toString(),
-                  senderId: currentUser!.uid,
-                  content: value.trim(),
-                  sentAt: currentTime);
-              APIs.sendMessage(hash, message);
-              toUpdateRecentMessage = true;
-              lastMessageSentByCurrentUser = message;
+              _createAndSendMessage(value.trim());
               _textController.clear();
             },
           ),
         )
+      ],
+    );
+  }
+
+  Widget _buildImageButton({
+    required String assetPath,
+    required String text,
+    required VoidCallback onPressed,
+  }) {
+    return Stack(
+      children: [
+        InkWell(
+          onTap: onPressed,
+          child: Ink.image(
+            height: 150,
+            width: 150,
+            image: AssetImage(assetPath),
+            fit: BoxFit.cover, // Adjust fit as needed
+          ),
+        ),
+        Positioned(
+          bottom: 0.0,
+          left: 0.0,
+          right: 0.0,
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 15.0,
+              color: Theme.of(context).textTheme.bodySmall!.color,
+            ),
+          ),
+        ),
       ],
     );
   }

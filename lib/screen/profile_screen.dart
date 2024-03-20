@@ -52,9 +52,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _selectImage() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.background,
       elevation: 0,
-      barrierColor: Colors.black.withOpacity(0.3),
+      barrierColor: Theme.of(context).colorScheme.onBackground.withOpacity(0.3),
       builder: (context) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 10.0),
         child: Row(
@@ -125,7 +125,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     try {
-      print("Logs: Profile Update user data: $userData , ${widget.currentUser.uid}");
+      print(
+          "Logs: Profile Update user data: $userData , ${widget.currentUser.uid}");
       await APIs.updateUserData(userData, widget.currentUser.uid);
       if (context.mounted) {
         showSnackBarWithText(
@@ -250,16 +251,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         Positioned(
-          bottom: 5.0,
+          bottom: 0.0,
           left: 0.0,
           right: 0.0,
           child: Text(
             text,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 15.0,
-              color: Colors.black,
+              color: Theme.of(context).textTheme.bodySmall!.color,
             ),
           ),
         ),
