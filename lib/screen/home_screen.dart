@@ -109,7 +109,8 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         leading: const Icon(CupertinoIcons.home),
         elevation: 15,
-        title: const Center(child: Text('Batein Karo')),
+        title: const Text('Batein Karo'),
+        centerTitle: true,
         actions: [
           IconButton(
             onPressed: () {},

@@ -163,7 +163,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               return Scaffold(
                 appBar: AppBar(
                   elevation: 15,
-                  title: const Center(child: Text('Your Glorious Profile')),
+                  centerTitle: true,
+                  title: const Text('Your Glorious Profile'),
                 ),
                 body: SingleChildScrollView(
                   child: Form(

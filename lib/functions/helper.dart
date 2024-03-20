@@ -45,33 +45,53 @@ String extractTimeFromDateTime(DateTime datetime) {
   return DateFormat("HH:mm").format(datetime);
 }
 
-String formatLastSeen(DateTime lastSeen) {
+String formatDateTime(
+  DateTime datetime, {
+  String prefixForToday = 'Today',
+  String prefixForYesterday = 'Yesterday',
+  String prefixForRest = "",
+}) {
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
   final yesterday = DateTime(now.year, now.month, now.day - 1);
-
-  if (lastSeen.isAfter(today)) {
-    return 'Last seen today at ${DateFormat('HH:mm').format(lastSeen)}';
-  } else if (lastSeen.isAfter(yesterday)) {
-    return 'Last seen yesterday at ${DateFormat('HH:mm').format(lastSeen)}';
-  } else if (now.year == lastSeen.year) {
-    return 'Last seen on ${DateFormat('d MMM').format(lastSeen)}';
+  final String result;
+  if (datetime.isAfter(today)) {
+    result = '$prefixForToday ${DateFormat('HH:mm').format(datetime)}';
+  } else if (datetime.isAfter(yesterday)) {
+    result = '$prefixForYesterday ${DateFormat('HH:mm').format(datetime)}';
+  } else if (now.year == datetime.year) {
+    result = '$prefixForRest ${DateFormat('d MMM').format(datetime)}';
   } else {
-    return 'Last seen on ${DateFormat('d MMM y').format(lastSeen)}';
+    result = '$prefixForRest ${DateFormat('d MMM y').format(datetime)}';
   }
+  return result.trim();
 }
 
-String formatLastMessageTimeForRecentMessage(DateTime lastSeen) {
+String formatLastSeen(DateTime datetime) {
+  return formatDateTime(datetime,
+      prefixForRest: "Last seen on",
+      prefixForToday: "Last seen today at",
+      prefixForYesterday: "Last seen yesterday at");
+}
+
+String formatJoinedDate(DateTime datetime) {
+  return formatDateTime(datetime,
+      prefixForRest: "",
+      prefixForToday: "Today at",
+      prefixForYesterday: "Yesterday at");
+}
+
+String formatLastMessageTimeForRecentMessage(DateTime datetime) {
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
   final yesterday = DateTime(now.year, now.month, now.day - 1);
 
-  if (lastSeen.isAfter(today)) {
-    return DateFormat('HH:mm').format(lastSeen);
-  } else if (lastSeen.isAfter(yesterday)) {
+  if (datetime.isAfter(today)) {
+    return DateFormat('HH:mm').format(datetime);
+  } else if (datetime.isAfter(yesterday)) {
     return 'Yesterday';
   } else {
-    return DateFormat('d/MM/y').format(lastSeen);
+    return DateFormat('d/MM/y').format(datetime);
   }
 }
 

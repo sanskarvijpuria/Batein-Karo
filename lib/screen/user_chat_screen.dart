@@ -7,6 +7,7 @@ import 'package:chat_app/models/chat_messages.dart';
 import 'package:chat_app/models/chat_user.dart';
 import 'package:chat_app/models/messages.dart';
 import 'package:chat_app/models/recent_chats.dart';
+import 'package:chat_app/screen/to_user_profile_screen.dart';
 import 'package:chat_app/widgets/message_card.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/cupertino.dart';
@@ -313,10 +314,17 @@ class _UserChatScreenState extends State<UserChatScreen> {
           }
         },
       ),
-      actions: const [
+      actions: [
         Padding(
-          padding: EdgeInsets.only(right: 15),
-          child: Icon(CupertinoIcons.info_circle_fill),
+          padding: const EdgeInsets.only(right: 15),
+          child: IconButton(
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) =>
+                      OtherUserProfileScreen(toUser: widget.toUser)));
+            },
+            icon: const Icon(CupertinoIcons.info_circle_fill),
+          ),
         ),
       ],
     );
