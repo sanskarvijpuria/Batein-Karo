@@ -9,16 +9,19 @@ import 'package:chat_app/models/messages.dart';
 import 'package:chat_app/models/recent_chats.dart';
 import 'package:chat_app/screen/to_user_profile_screen.dart';
 import 'package:chat_app/widgets/message_card.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 
 class UserChatScreen extends StatefulWidget {
-  const UserChatScreen(this.toUser, {super.key});
+  UserChatScreen(this.toUser, {super.key});
 
-  final ChatUser toUser;
+  ChatUser? toUser;
+  // static const route = "/notification-screen";
 
   @override
   _UserChatScreenState createState() => _UserChatScreenState();
@@ -27,6 +30,7 @@ class UserChatScreen extends StatefulWidget {
 class _UserChatScreenState extends State<UserChatScreen> {
   final TextEditingController _textController = TextEditingController();
   late Stream _myStream;
+  late ChatUser currentStreamData;
   String hash = "";
   bool _emojiShowing = false,
       _isUploading = false,
@@ -46,13 +50,50 @@ class _UserChatScreenState extends State<UserChatScreen> {
   ];
   String hintText = "";
   final random = Random();
+  Map<String, dynamic>? toUserDataFromNotifcation;
+  bool isUserComingFromNotificationLoading = false;
 
   @override
   void initState() {
     super.initState();
-    hash = generateHash(currentUser!.uid, widget.toUser.uid);
+  }
+
+  @override
+  void didChangeDependencies() async {
+    super.didChangeDependencies();
+    if (widget.toUser == null) {
+      setState(() {
+        isUserComingFromNotificationLoading = true;
+      });
+      final message =
+          ModalRoute.of(context)?.settings.arguments as RemoteMessage?;
+      print("Modal Message, $message");
+      if (message != null) {
+        print("Message UserChatScreen: ${message.toMap()}");
+        print("Message UserChatScreen UID: ${message.data["uid"]}");
+        await getParticularUserDataFromNotification(message.data["uid"])
+            .then((_) {
+          widget.toUser = ChatUser.fromJson(toUserDataFromNotifcation!);
+          print("Here ${widget.toUser!.toJson()}");
+          _setupChat(widget.toUser!);
+          setState(() {
+            isUserComingFromNotificationLoading = false;
+          });
+        });
+      }
+    } else {
+      _setupChat(widget.toUser!);
+    }
+  }
+
+  void _setupChat(ChatUser toUser) {
+    hash = generateHash(currentUser!.uid, toUser.uid);
     _myStream = APIs.getAllMessagesBetweenUsers(hash);
     hintText = hintMessages[random.nextInt(hintMessages.length)];
+  }
+
+  Future<void> getParticularUserDataFromNotification(String uid) async {
+    toUserDataFromNotifcation = await APIs.getParticularUserData(uid);
   }
 
   @override
@@ -75,7 +116,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
         message.seen = true;
         if (message == messages.reversed.last) {
           APIs.updateRecentMessageforBothUsers(currentUser!.uid,
-              widget.toUser.uid, messageToLastMessage(message));
+              widget.toUser!.uid, messageToLastMessage(message));
         }
       }
     }
@@ -137,7 +178,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
         content: content,
         sentAt: currentTime,
         type: type);
-    APIs.sendMessage(hash, message);
+    APIs().sendMessageAndPushNotifcation(hash, message, currentStreamData);
     toUpdateRecentMessage = true;
     lastMessageSentByCurrentUser = message;
   }
@@ -178,6 +219,11 @@ class _UserChatScreenState extends State<UserChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print(
+        "AAAWidgetTree ${widget.toUser}, $isUserComingFromNotificationLoading");
+    if (widget.toUser == null || isUserComingFromNotificationLoading) {
+      return const CircularProgressIndicator();
+    }
     Size mq = MediaQuery.of(context).size;
     print(Theme.of(context).colorScheme.background.withBlue(100).hex);
 
@@ -188,7 +234,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
         if (toUpdateRecentMessage) {
           // _isLastSentMessageSeen(list);
           await APIs.updateRecentMessageforBothUsers(
-              widget.toUser.uid,
+              widget.toUser!.uid,
               currentUser!.uid,
               messageToLastMessage(lastMessageSentByCurrentUser!));
         }
@@ -267,7 +313,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
       elevation: 15,
       titleSpacing: 0,
       title: StreamBuilder(
-        stream: APIs.getParticularUserSnapshot(widget.toUser.uid),
+        stream: APIs.getParticularUserSnapshot(widget.toUser!.uid),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting ||
               snapshot.connectionState == ConnectionState.none) {
@@ -275,12 +321,8 @@ class _UserChatScreenState extends State<UserChatScreen> {
               child: CircularProgressIndicator(),
             );
           } else {
-            // print(snapshot.data?.data());
-            // print(currentUser!.uid);
-            // final currentStreamData = snapshot.data;
             if (snapshot.data!.data() != null) {
-              final currentStreamData =
-                  ChatUser.fromJson(snapshot.data!.data()!);
+              currentStreamData = ChatUser.fromJson(snapshot.data!.data()!);
               return Row(
                 children: [
                   CircleAvatar(
@@ -321,7 +363,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
             onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) =>
-                      OtherUserProfileScreen(toUser: widget.toUser)));
+                      OtherUserProfileScreen(toUser: currentStreamData)));
             },
             icon: const Icon(CupertinoIcons.info_circle_fill),
           ),
@@ -388,11 +430,11 @@ class _UserChatScreenState extends State<UserChatScreen> {
               if (isMessageFound == false) {
                 print(
                     "User is having conversion between each other for the first time");
-                print("${currentUser!.uid}, ${widget.toUser.uid}, $hash");
+                print("${currentUser!.uid}, ${widget.toUser!.uid}, $hash");
                 final Chat chatData = Chat(
                     chatId: hash.toString(),
                     type: "Individual",
-                    participants: [currentUser!.uid, widget.toUser.uid]);
+                    participants: [currentUser!.uid, widget.toUser!.uid]);
                 APIs.createChat(chatData);
               }
               final String value = _textController.text;

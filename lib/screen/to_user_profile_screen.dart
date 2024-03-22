@@ -1,16 +1,16 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_app/functions/helper.dart';
 import 'package:chat_app/models/chat_user.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class OtherUserProfileScreen extends StatelessWidget {
-  OtherUserProfileScreen({super.key, required this.toUser});
-  late Size mq;
   final ChatUser toUser;
+  const OtherUserProfileScreen({super.key, required this.toUser});
 
   @override
   Widget build(BuildContext context) {
-    mq = MediaQuery.of(context).size;
+    Size mq = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
         elevation: 15,
@@ -22,92 +22,148 @@ class OtherUserProfileScreen extends StatelessWidget {
         padding: EdgeInsets.only(
             top: mq.height * 0.05,
             left: mq.width * 0.03,
-            right: mq.width * 0.03),
+            right: mq.width * 0.03,
+            bottom: mq.height * 0.02),
         child: Column(
           children: [
-            _buildProfilePicture(),
+            _buildProfilePicture(context, mq),
             SizedBox(height: mq.height * 0.03),
-            // Name
-            Text(
-              toUser.name,
-              style: Theme.of(context).textTheme.displaySmall,
-            ),
-            SizedBox(height: mq.height * 0.001),
-            // User Name
-            Text(
-              toUser.userName,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge!
-                  .copyWith(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: mq.height * 0.025),
-            Text(
-              formatLastSeen(toUser.lastActive!),
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            SizedBox(height: mq.height * 0.025),
-            Container(
-              padding: const EdgeInsets.all(5),
-              height: mq.height * 0.04,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                  color:
-                      Theme.of(context).colorScheme.primary.withOpacity(0.05)),
-              child: Text(
-                toUser.about,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ),
+            _buildUserInfo(context, mq),
             SizedBox(height: mq.height * 0.01),
-            Container(
-              padding: const EdgeInsets.all(5),
-              height: mq.height * 0.04,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                  color:
-                      Theme.of(context).colorScheme.primary.withOpacity(0.05)),
-              child: Text(
-                toUser.about,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ),
-            // Email
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const Text(
-                    'Joined On: ',
-                    style: TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 15),
-                  ),
-                  Text(
-                      formatJoinedDate(
-                        toUser.createdAt!,
-                      ),
-                      style:
-                          const TextStyle(color: Colors.black54, fontSize: 15)),
-                ],
-              ),
-            )
+            _buildAboutSection(context),
+            SizedBox(height: mq.height * 0.03),
+            Expanded(child: _buildJoinedOn(context)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildProfilePicture() {
-    return Stack(
+  Widget _buildProfilePicture(BuildContext context, Size mq) {
+    return InkWell(
+      customBorder: CircleBorder(),
+      onTap: () {
+        showAdaptiveDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog.adaptive(
+                  content: CachedNetworkImage(
+                imageUrl: toUser.userImage,
+                imageBuilder: (context, imageProvider) => Container(
+                  width: mq.height * 0.50,
+                  height: mq.height * 0.50,
+                  decoration: BoxDecoration(
+                    color: null,
+                    shape: BoxShape.circle,
+                    image: DecorationImage(
+                        image: imageProvider, fit: BoxFit.contain),
+                  ),
+                ),
+                placeholder: (context, url) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+                errorWidget: (context, url, error) => const Icon(Icons.error),
+              ));
+            });
+      },
+      child: CircleAvatar(
+        radius: mq.height * 0.12, // Fixed size for profile picture
+        backgroundImage: CachedNetworkImageProvider(toUser.userImage),
+      ),
+    );
+  }
+
+  Widget _buildUserInfo(BuildContext context, Size mq) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        CircleAvatar(
-          radius: mq.height * 0.12,
-          backgroundImage: Image.network(toUser.userImage).image,
+        Text(
+          toUser.name,
+          style: Theme.of(context).textTheme.displaySmall,
+        ),
+        SizedBox(height: mq.height * 0.001),
+        Text(
+          toUser.userName,
+          style: Theme.of(context)
+              .textTheme
+              .bodyLarge!
+              .copyWith(fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: mq.height * 0.002),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              CupertinoIcons.circle_filled,
+              size: 15.0,
+              color: toUser.isOnline ? Colors.green : Colors.grey,
+            ),
+            const SizedBox(width: 5.0),
+            Text(
+              toUser.isOnline ? "Online" : formatLastSeen(toUser.lastActive!),
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAboutSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "About",
+          textAlign: TextAlign.left,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(10.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10.0),
+            border: Border.all(color: Theme.of(context).colorScheme.primary),
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            toUser.about.isEmpty
+                ? "User has not set up any About. Aalsi hai."
+                : toUser.about,
+            style: toUser.about.isEmpty
+                ? Theme.of(context).textTheme.bodyLarge!.copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onBackground
+                        .withOpacity(0.5))
+                : Theme.of(context).textTheme.bodyLarge,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildJoinedOn(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          'Joined On: ',
+          style: TextStyle(
+              color: Theme.of(context).colorScheme.onBackground,
+              fontWeight: FontWeight.w500,
+              fontSize: 15),
+        ),
+        Text(
+          formatJoinedDate(toUser.createdAt!),
+          style: TextStyle(
+              color:
+                  Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+              fontSize: 15),
         ),
       ],
     );

@@ -4,6 +4,7 @@ import 'package:chat_app/models/recent_chats.dart';
 import 'package:chat_app/widgets/home_screen_user_card.dart';
 import 'package:chat_app/widgets/kebab_menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
@@ -20,26 +21,42 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = false; // Flag for loading state
   List<List<dynamic>> recentUserDataWithLastMessage = [];
   Set<String> recentChatsUid = {};
-  bool isRecentMessageUpdated = false;
+  bool isRecentMessageUpdated = false, _isSearching = false;
   DocumentSnapshot<Map<String, dynamic>>? _previousStreamData;
+  final List<List<dynamic>> _searchList = [];
 
+  @override
   @override
   void initState() {
     super.initState();
-    _getSelfData().then((value) {
-      APIs.updateUserOnlineStatus(
-          currentUser!.uid, true); // For the first time setting it as true;
+
+    _getSelfData().then((_) async {
+      await APIs.updateUserOnlineStatus(currentUser!.uid, true);
+
+      final notificationSettings = await APIs.askForPermission();
+      if (notificationSettings.authorizationStatus ==
+          AuthorizationStatus.authorized) {
+        final pushToken = await APIs.getPushToken();
+        if (pushToken != null) {
+          print("PushToken: $pushToken");
+          await APIs.updateUserData(
+              {"push_token": pushToken}, currentUser!.uid);
+          // FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
+          initPushNotifications();
+        }
+      }
     });
 
-    SystemChannels.lifecycle.setMessageHandler((message) {
+    SystemChannels.lifecycle.setMessageHandler((message) async {
       print('System Message: ${message.toString()}');
 
       if (currentUser != null && message != null) {
         if (message.toString().toLowerCase().contains("resume")) {
-          APIs.updateUserOnlineStatus(currentUser!.uid, true);
-        }
-        if (message.toLowerCase().contains("pause")) {
-          APIs.updateUserOnlineStatus(currentUser!.uid, false);
+          await APIs.updateUserOnlineStatus(currentUser!.uid, true);
+        } else if (message.toLowerCase().contains("pause")) {
+          await APIs.updateUserOnlineStatus(currentUser!.uid, false);
+        } else if (message.toLowerCase().contains("detached")) {
+          await APIs.updateUserOnlineStatus(currentUser!.uid, false);
         }
       }
       return Future.value(message);
@@ -107,14 +124,50 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     return Scaffold(
       appBar: AppBar(
+        titleSpacing: 0,
         leading: const Icon(CupertinoIcons.home),
         elevation: 15,
-        title: const Text('Batein Karo'),
+        title: _isSearching
+            ? TextField(
+                decoration: const InputDecoration(
+                  hintText: 'Name, Email, ...',
+                  hintStyle: TextStyle(fontSize: 10, letterSpacing: 0.5),
+                ),
+                autofocus: true,
+                style: const TextStyle(fontSize: 10, letterSpacing: 0.5),
+                //when search text changes then updated search list
+                onChanged: (val) {
+                  //search logic
+                  _searchList.clear();
+
+                  for (int i = 0;
+                      i < recentUserDataWithLastMessage.length;
+                      i++) {
+                    ChatUser chat = recentUserDataWithLastMessage[i][0];
+                    if (chat.name.toLowerCase().contains(val.toLowerCase()) ||
+                        chat.userName
+                            .toLowerCase()
+                            .contains(val.toLowerCase())) {
+                      _searchList.add(recentUserDataWithLastMessage[i]);
+                      setState(() {
+                        _searchList;
+                      });
+                    }
+                  }
+                },
+              )
+            : const Text('Batein Karo'),
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: () {},
-            icon: const Icon(CupertinoIcons.search),
+            onPressed: () {
+              setState(() {
+                _isSearching = !_isSearching;
+              });
+            },
+            icon: Icon(_isSearching
+                ? CupertinoIcons.clear_circled_solid
+                : Icons.search),
           ),
           const KebabMenu(),
         ],
@@ -140,15 +193,6 @@ class _HomeScreenState extends State<HomeScreen> {
               final currentStreamData = snapshot.data;
               if (snapshot.data!.data() != null &&
                   snapshot.data!.get("to_uids") != []) {
-                // List<dynamic> listOfUsers = snapshot.data!
-                //     .get("to_uids")
-                //     .map((dict) => dict.keys.first)
-                //     .toList();
-                // print("$listOfUsers, ${recentChatsUid.toList()}");
-                // print(snapshot.data!.get("to_uids"));
-                // if (!eq(listOfUsers, recentChatsUid.toList())) {
-                //   _recentChatUserData(snapshot.data!.get("to_uids"));
-                // }
                 if (!eq(
                     currentStreamData?.data(), _previousStreamData?.data())) {
                   _previousStreamData = currentStreamData;
@@ -157,15 +201,25 @@ class _HomeScreenState extends State<HomeScreen> {
               }
               if (recentUserDataWithLastMessage.isNotEmpty) {
                 return ListView.builder(
-                  itemCount: recentUserDataWithLastMessage.length,
+                  itemCount: _isSearching
+                      ? _searchList.length
+                      : recentUserDataWithLastMessage.length,
                   padding: EdgeInsets.symmetric(vertical: mq.height * 0.01),
                   physics: const BouncingScrollPhysics(),
                   itemBuilder: (context, index) {
-                    return HomeScreenChatUserCard(
-                      mq: mq,
-                      chatUser: recentUserDataWithLastMessage[index][0],
-                      lastMessage: recentUserDataWithLastMessage[index][1],
-                    );
+                    if (_isSearching) {
+                      return HomeScreenChatUserCard(
+                        mq: mq,
+                        chatUser: _searchList[index][0],
+                        lastMessage: _searchList[index][1],
+                      );
+                    } else {
+                      return HomeScreenChatUserCard(
+                        mq: mq,
+                        chatUser: recentUserDataWithLastMessage[index][0],
+                        lastMessage: recentUserDataWithLastMessage[index][1],
+                      );
+                    }
                   },
                 );
               } else {

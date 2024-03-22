@@ -4,6 +4,7 @@ import 'package:chat_app/functions/helper.dart';
 import 'package:chat_app/models/chat_user.dart';
 import 'package:chat_app/models/recent_chats.dart';
 import 'package:chat_app/screen/user_chat_screen.dart';
+import 'package:chat_app/widgets/profile_dialog.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreenChatUserCard extends StatefulWidget {
@@ -56,10 +57,19 @@ class _HomeScreenChatUserCardState extends State<HomeScreenChatUserCard> {
           );
         },
         child: ListTile(
-          leading: CircleAvatar(
-            radius: 30,
-            backgroundImage: CachedNetworkImageProvider(
-              widget.chatUser.userImage,
+          leading: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () => showAdaptiveDialog(
+              context: context,
+              builder: (context) {
+                return ProfileDialog(toUser: widget.chatUser);
+              },
+            ),
+            child: CircleAvatar(
+              radius: 30,
+              backgroundImage: CachedNetworkImageProvider(
+                widget.chatUser.userImage,
+              ),
             ),
           ),
           title: Text(

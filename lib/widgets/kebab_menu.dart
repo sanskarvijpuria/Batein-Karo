@@ -29,9 +29,12 @@ class KebabMenu extends StatelessWidget {
         MenuItemButton(
           child: const Text("Logout"),
           onPressed: () {
-            APIs.auth.signOut();
             // Updating the User Status to offline and setting the variables to Initial value.
             APIs.updateUserOnlineStatus(currentUser!.uid, false);
+            APIs.updateUserData(
+                {"push_token": "", "is_online": false}, currentUser!.uid);
+            APIs.auth.signOut();
+
             currentUser = null;
             APIs.auth = FirebaseAuth.instance;
           },

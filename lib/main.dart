@@ -1,4 +1,6 @@
+import 'package:chat_app/screen/user_chat_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -14,21 +16,25 @@ import 'package:chat_app/screen/auth_screen.dart';
 
 import 'sample_file.dart';
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await FirebaseAuth.instance.useAuthEmulator('192.168.1.9', 9099);
-  await FirebaseStorage.instance.useStorageEmulator('192.168.1.9', 9199);
-  FirebaseFirestore.instance.useFirestoreEmulator('192.168.1.9', 8080);
-  // try {
-  //   final sampleFile = SampleFile();
-  //   await sampleFile.startHere();
-  // } on Exception catch (err) {
-  //   print(err.toString());
-  // }
+  if (kDebugMode) {
+    await FirebaseAuth.instance.useAuthEmulator('192.168.1.9', 9099);
+    await FirebaseStorage.instance.useStorageEmulator('192.168.1.9', 9199);
+    FirebaseFirestore.instance.useFirestoreEmulator('192.168.1.9', 8080);
+    // try {
+    //   final sampleFile = SampleFile();
+    //   await sampleFile.startHere();
+    // } on Exception catch (err) {
+    //   print(err.toString());
+    // }
+  }
   runApp(MyApp(widgetsBinding: widgetsBinding));
 }
 
@@ -47,6 +53,14 @@ class MyApp extends StatelessWidget {
       //       seedColor: const Color.fromARGB(255, 47, 5, 153)),
       // ),
       theme: customLightTheme,
+      navigatorKey: navigatorKey,
+      routes: {
+        "/home_screen" :(context) => HomeScreen(),
+        "/user_chat_screen": (context) {
+          print("MAINSCREEN");
+          return UserChatScreen(null);
+        }
+      },
       darkTheme: customDarkTheme,
       home: StreamBuilder(
         stream: FirebaseAuth.instance.authStateChanges(),

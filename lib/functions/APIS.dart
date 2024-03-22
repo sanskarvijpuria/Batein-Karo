@@ -1,4 +1,8 @@
+import 'dart:convert';
 import 'dart:io' as io;
+import 'dart:io';
+import 'package:chat_app/functions/access_firebase_token.dart';
+import 'package:chat_app/main.dart';
 import 'package:chat_app/models/chat_messages.dart';
 import 'package:chat_app/models/chat_user.dart';
 import 'package:chat_app/models/messages.dart';
@@ -6,15 +10,52 @@ import 'package:chat_app/models/recent_chats.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 
 ChatUser? currentUser;
 
+Future<void> handleBackgroundMessage(RemoteMessage message) async {
+  print("Title: ${message.notification?.title}");
+  print("Body: ${message.notification?.body}");
+  print("Payload: ${message.data}");
+  print("From: ${message.from}");
+  print("Complete map: ${message.toMap()}");
+  handleMessage(message);
+}
+
+void handleMessage(RemoteMessage? message) {
+  if (message == null)
+    return;
+  else {
+    print("HandleMessage $message");
+    navigatorKey.currentState
+        ?.pushNamed("/user_chat_screen", arguments: message);
+  }
+}
+
+Future initPushNotifications() async {
+  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      alert: true, badge: true, sound: true);
+
+  await FirebaseMessaging.instance.getInitialMessage().then(handleMessage);
+  await FirebaseMessaging.onMessageOpenedApp.listen(
+    (RemoteMessage message) {
+      print("Background Notifcation Message Tapped");
+      handleMessage(message);
+    },
+  );
+  FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
+}
+
 class APIs {
   static FirebaseFirestore db = FirebaseFirestore.instance;
   static FirebaseAuth auth = FirebaseAuth.instance;
   static FirebaseStorage storageRef = FirebaseStorage.instance;
+  static FirebaseMessaging fCMessaging = FirebaseMessaging.instance;
+  String firebaseProjectID = "flutter-chat-by-sanskar";
 
   // ****************** User Data Get and Update *********************
 
@@ -62,10 +103,12 @@ class APIs {
   }
 
   static Future<void> updateUserOnlineStatus(String uid, bool isOnline) async {
-    final docRef = db
+    print("Changing the onlinestatus of the user to $isOnline");
+    final docRef = await db
         .collection('users')
         .doc(uid)
         .update({'is_online': isOnline, 'last_active': Timestamp.now()});
+    print("Done");
   }
 
   // ****************** Cloud Storage upload Profile Pic and Chat Images *********************
@@ -196,4 +239,64 @@ class APIs {
         db.collection("chats").doc(hash.toString()).snapshots();
     return data;
   }
+
+  // ****************** Push Notifications ************************
+  static Future<String?> getPushToken() async {
+    String? pushToken = await fCMessaging.getToken();
+    return pushToken;
+  }
+
+  static Future<NotificationSettings> askForPermission() async {
+    NotificationSettings notifications = await fCMessaging.requestPermission();
+    print('User granted permission: ${notifications.authorizationStatus}');
+    return notifications;
+  }
+
+  Future<void> sendPushNotification(ChatUser toUser, String message) async {
+    try {
+      if (toUser.pushToken.isEmpty) {
+        print(
+            "Cannot send notification to this user. PushToken is not available for this user.");
+        return;
+      }
+
+      AccessFirebaseToken accessToken = AccessFirebaseToken();
+      String bearerToken = await accessToken.getAccessToken();
+      String url =
+          "https://fcm.googleapis.com/v1/projects/$firebaseProjectID/messages:send";
+
+      final payload = {
+        "message": {
+          "token": toUser.pushToken,
+          "notification": {"title": currentUser!.name, "body": message},
+          "data": {"uid": currentUser!.uid}
+        }
+      };
+
+      print("Payload $payload");
+
+      Map<String, String> headers = {
+        HttpHeaders.contentTypeHeader: 'application/json',
+        'Authorization': 'Bearer $bearerToken'
+      };
+
+      http.Response res = await http.post(Uri.parse(url),
+          headers: headers, body: jsonEncode(payload));
+      print("Status Code: ${res.statusCode}");
+      print("Request String: ${res.request.toString()}");
+      print("Body: ${res.body}");
+    } on Exception catch (err) {
+      print("Unable to send push notification due to $err");
+    }
+  }
+
+  Future<void> sendMessageAndPushNotifcation(
+      String hash, Message message, ChatUser toUser) async {
+    await sendMessage(hash, message).then((_) async {
+      await sendPushNotification(toUser,
+          message.type == "text" ? message.content : "IMAGE AAYA HAI BRO.");
+    });
+  }
+
+
 }
