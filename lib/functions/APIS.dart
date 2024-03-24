@@ -221,9 +221,7 @@ class APIs {
         .doc(hash)
         .collection('messages')
         .doc(messageId)
-        .update({
-      'seen': true,
-    });
+        .update({'seen': true, 'seen_at': Timestamp.now()});
   }
 
   static Future<void> markAllMessagesRead(
@@ -238,6 +236,32 @@ class APIs {
     Stream<DocumentSnapshot<Map<String, dynamic>>> data =
         db.collection("chats").doc(hash.toString()).snapshots();
     return data;
+  }
+
+  static Future<void> deleteMessage(String hash, Message message) async {
+    // The below code is completely optional. We are saving the deleted message in the different folder.
+    // TODO: Remove this in future. Also correct the image code accoridngly.
+
+    Map<String, dynamic> deletedMessage = message.toJson();
+    deletedMessage["deleted_time"] = Timestamp.now();
+    await db
+        .collection("deletedChats")
+        .doc(hash.toString())
+        .collection("messages")
+        .doc(message.messageId)
+        .set(deletedMessage);
+
+    await db
+        .collection('chats')
+        .doc(hash)
+        .collection('messages')
+        .doc(message.messageId)
+        .delete();
+
+      // TODO: Undo in future commits.
+    // if (message.type == "image") {
+    //   await APIs.storageRef.refFromURL(message.content).delete();
+    // }
   }
 
   // ****************** Push Notifications ************************
@@ -297,6 +321,4 @@ class APIs {
           message.type == "text" ? message.content : "IMAGE AAYA HAI BRO.");
     });
   }
-
-
 }

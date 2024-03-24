@@ -127,11 +127,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       print(
           "Logs: Profile Update user data: $userData , ${widget.currentUser.uid}");
-      await APIs.updateUserData(userData, widget.currentUser.uid);
-      if (context.mounted) {
-        showSnackBarWithText(
-            context, "Your Data is saved.", const Duration(seconds: 3));
-      }
+      await APIs.updateUserData(userData, widget.currentUser.uid).then(
+          (value) => showSnackBarWithText(
+              context, "Your Data is saved.", const Duration(seconds: 3)));
     } catch (error) {
       print(error);
     } finally {

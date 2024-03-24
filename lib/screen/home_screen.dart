@@ -39,8 +39,10 @@ class _HomeScreenState extends State<HomeScreen> {
         final pushToken = await APIs.getPushToken();
         if (pushToken != null) {
           print("PushToken: $pushToken");
-          await APIs.updateUserData(
-              {"push_token": pushToken}, currentUser!.uid);
+          if (currentUser!.pushToken != pushToken) {
+            await APIs.updateUserData(
+                {"push_token": pushToken}, currentUser!.uid);
+          }
           // FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
           initPushNotifications();
         }

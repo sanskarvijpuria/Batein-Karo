@@ -12,10 +12,11 @@ import 'package:chat_app/widgets/message_card.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:grouped_list/grouped_list.dart';
+import 'package:intl/intl.dart';
 
 class UserChatScreen extends StatefulWidget {
   UserChatScreen(this.toUser, {super.key});
@@ -38,6 +39,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
       isMessageFound = false;
   List<Message> list = [];
   Message? lastMessageSentByCurrentUser;
+  Message? lastMessageReceiveFromStream;
   XFile? selectedImage;
   List<XFile> selectedImages = [];
   String? downloadURL;
@@ -99,6 +101,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
   @override
   void dispose() {
     _textController.dispose();
+    lastMessageSentByCurrentUser = null;
     super.dispose();
   }
 
@@ -109,7 +112,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
       List<Message> messages,
       String hash) async {
     print("heree");
-    lastMessageSentByCurrentUser = messages.reversed.last;
+    // lastMessageSentByCurrentUser = messages.reversed.last;
     for (Message message in messages.reversed) {
       if (message.senderId != currentUser!.uid && message.seen == false) {
         await APIs.markMessageRead(hash, message.messageId);
@@ -231,12 +234,13 @@ class _UserChatScreenState extends State<UserChatScreen> {
       onWillPop: () async {
         // This is done to minimize the API call, but we can call this directly, when user is sending message to see the immediate Recent message update.
         // That should be the case and then it will work as expected. It is here, just to minimize the API call.
-        if (toUpdateRecentMessage) {
+        if (toUpdateRecentMessage ||
+            lastMessageReceiveFromStream != lastMessageSentByCurrentUser) {
           // _isLastSentMessageSeen(list);
           await APIs.updateRecentMessageforBothUsers(
               widget.toUser!.uid,
               currentUser!.uid,
-              messageToLastMessage(lastMessageSentByCurrentUser!));
+              messageToLastMessage(lastMessageReceiveFromStream!));
         }
         if (_emojiShowing) {
           setState(() {
@@ -270,17 +274,40 @@ class _UserChatScreenState extends State<UserChatScreen> {
                             ?.cast<Message>() ??
                         [];
                     marktheUnreadMessages(list, hash);
+                    lastMessageReceiveFromStream = list.first;
+                    print(
+                        "lastMessageReceiveFromStream ${lastMessageReceiveFromStream!.toJson()}");
                     if (list.isNotEmpty) {
                       isMessageFound = true;
                       return Expanded(
-                        child: ListView.builder(
+                        child: GroupedListView(
+                          elements: list,
+                          groupBy: (element) {
+                            return DateTime.parse(DateFormat('yyyy-MM-dd')
+                                .format(element.sentAt));
+                          },
+                          groupComparator: (DateTime value1, DateTime value2) =>
+                              value2.compareTo(value1),
+                          groupSeparatorBuilder: (value) => Container(
+                              margin: EdgeInsets.symmetric(
+                                  horizontal:
+                                      MediaQuery.of(context).size.width * 0.2,
+                                  vertical: 10),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 2, horizontal: 2),
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12)),
+                              child: Text(DateFormat.yMMMMd().format(value),
+                                  textAlign: TextAlign.center)),
                           reverse: true,
-                          itemCount: list.length,
                           padding:
                               EdgeInsets.symmetric(vertical: mq.height * 0.01),
                           physics: const ClampingScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            return MessageCard(message: list[index]);
+                          itemBuilder: (context, element) {
+                            return MessageCard(
+                              message: element,
+                              hash: hash,
+                            );
                           },
                         ),
                       );

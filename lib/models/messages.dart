@@ -7,6 +7,7 @@ class Message {
   DateTime sentAt;
   String type;
   bool seen;
+  DateTime? seenAt;
 
   Message({
     required this.messageId,
@@ -15,6 +16,7 @@ class Message {
     required this.sentAt,
     this.type = 'text',
     this.seen = false,
+    this.seenAt
   });
 
   Map<String, dynamic> toJson() {
@@ -25,6 +27,7 @@ class Message {
       'sent_at': sentAt,
       'type': type,
       'seen': seen,
+      'seen_at' : seenAt
     };
   }
 
@@ -36,6 +39,7 @@ class Message {
       sentAt: convertTimestamptoDatetime(json['sent_at']),
       type: json['type'],
       seen: json['seen'] ?? false,
+      seenAt: json['seen_at'] == null ? null : convertTimestamptoDatetime(json['seen_at']) 
     );
   }
 }
