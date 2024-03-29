@@ -304,6 +304,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const String keyName = "name";
         updateUserData(keyName, newValue!, snapshot.data.name);
       },
+      minLines: 1,
+      maxLines: 2,
       decoration: _buildInputDecoration(
         "Your Real (or Imaginary, we hope not) Name",
         "Your real name, please. Unless you're Batman.",
@@ -319,6 +321,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const String keyName = "about";
         updateUserData(keyName, newValue!, snapshot.data.about);
       },
+      minLines: 1,
+      maxLines: 3,
+      maxLength: 100,
       decoration: _buildInputDecoration(
         "Life in a few sentences.",
         "\"About you,\" not \"About your cat.\" (Unless your cat is super cool)",
@@ -350,6 +355,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         fontWeight: FontWeight.bold,
       ),
       hintText: hintText,
+      hintMaxLines: 3,
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10.0),
         borderSide: const BorderSide(color: Colors.grey),

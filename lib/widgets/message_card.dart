@@ -80,7 +80,7 @@ class _MessageCardCardState extends State<MessageCard> {
                             download(res.bodyBytes,
                                 downloadName: "${DateTime.now()}.jpg");
                           });
-                        } else { 
+                        } else {
                           await GallerySaver.saveImage(
                                   "${widget.message.content}.jpg",
                                   albumName: "Batein Karo")
@@ -352,7 +352,7 @@ class _MessageCardCardState extends State<MessageCard> {
     // Build outer container
     final Widget outerContainer =
         _buildOuterContainer(colorScheme, isSender, options);
-
+    print("${widget.message.content} ${widget.message.sentAt.toLocal()}");
     // Return outer container with InkWell for non-web platforms
     return kIsWeb
         ? outerContainer

@@ -17,6 +17,7 @@ import 'package:chat_app/screen/auth_screen.dart';
 import 'sample_file.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
+// late Size mq;
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -25,9 +26,10 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   if (kDebugMode) {
-    await FirebaseAuth.instance.useAuthEmulator('192.168.1.9', 9099);
-    await FirebaseStorage.instance.useStorageEmulator('192.168.1.9', 9199);
-    FirebaseFirestore.instance.useFirestoreEmulator('192.168.1.9', 8080);
+    print("Debugging");
+    // await FirebaseAuth.instance.useAuthEmulator('192.168.1.9', 9099);
+    // await FirebaseStorage.instance.useStorageEmulator('192.168.1.9', 9199);
+    // FirebaseFirestore.instance.useFirestoreEmulator('192.168.1.9', 8080);
     // try {
     //   final sampleFile = SampleFile();
     //   await sampleFile.startHere();
@@ -45,6 +47,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // mq = MediaQuery.of(context).size;
+    // print("Main Size $mq");
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Batein Karo ',
@@ -55,7 +59,7 @@ class MyApp extends StatelessWidget {
       theme: customLightTheme,
       navigatorKey: navigatorKey,
       routes: {
-        "/home_screen" :(context) => HomeScreen(),
+        "/home_screen": (context) => HomeScreen(),
         "/user_chat_screen": (context) {
           print("MAINSCREEN");
           return UserChatScreen(null);

@@ -1,7 +1,5 @@
 import 'package:chat_app/models/messages.dart';
 
-
-
 class Chat {
   String chatId; // Will be hash of two UIDs.
   String type;

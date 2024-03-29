@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -53,14 +54,22 @@ class AuthFunctions {
     }
   }
 
+  Future<void> createRecentMessage() async {
+    await db.collection('recent_chats').doc(userCredential.user!.uid).set({
+      'sender_id': userCredential.user!.uid,
+      'to_uids': [], // Initialize to_uids as an empty list
+    });
+  }
+
   Future<void> saveDataToFirestore(
       String downloadURL, String enteredEmail, String enteredUsername) async {
     try {
-      final Map<String, String> data = {
+      final Map<String, dynamic> data = {
         "user_name": enteredUsername,
         "email": enteredEmail,
         "uid": userCredential.user!.uid,
-        "user_image": downloadURL
+        "user_image": downloadURL,
+        "created_at": Timestamp.now()
       };
       db.collection("users").doc(userCredential.user!.uid).set(data);
     } on Exception catch (err) {

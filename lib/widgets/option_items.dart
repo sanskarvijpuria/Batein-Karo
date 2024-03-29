@@ -24,8 +24,10 @@ class OptionItem extends StatelessWidget {
             Flexible(
               child: Text(
                 '    $name',
-                style:  TextStyle(
-                    fontSize: 20, color: Theme.of(context).colorScheme.onBackground, letterSpacing: 0.5),
+                style: TextStyle(
+                    fontSize: 20,
+                    color: Theme.of(context).colorScheme.onBackground,
+                    letterSpacing: 0.5),
               ),
             )
           ],

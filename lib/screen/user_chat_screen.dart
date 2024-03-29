@@ -1,5 +1,4 @@
-import 'dart:math';
-
+import 'dart:math';  
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_app/functions/APIS.dart';
 import 'package:chat_app/functions/helper.dart';
@@ -9,6 +8,7 @@ import 'package:chat_app/models/messages.dart';
 import 'package:chat_app/models/recent_chats.dart';
 import 'package:chat_app/screen/to_user_profile_screen.dart';
 import 'package:chat_app/widgets/message_card.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/cupertino.dart';
@@ -26,11 +26,14 @@ class UserChatScreen extends StatefulWidget {
 
   @override
   _UserChatScreenState createState() => _UserChatScreenState();
+
+  static _UserChatScreenState of(BuildContext context) =>
+      context.findAncestorStateOfType<_UserChatScreenState>()!;
 }
 
 class _UserChatScreenState extends State<UserChatScreen> {
   final TextEditingController _textController = TextEditingController();
-  late Stream _myStream;
+  late Stream<QuerySnapshot<Map<String, dynamic>>> _myStream;
   late ChatUser currentStreamData;
   String hash = "";
   bool _emojiShowing = false,
@@ -63,7 +66,9 @@ class _UserChatScreenState extends State<UserChatScreen> {
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
+    print("Userchat screen ${widget.toUser}");
     if (widget.toUser == null) {
+      // Coming here from notification
       setState(() {
         isUserComingFromNotificationLoading = true;
       });
@@ -223,7 +228,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
   @override
   Widget build(BuildContext context) {
     print(
-        "AAAWidgetTree ${widget.toUser}, $isUserComingFromNotificationLoading");
+        "UserChatScreen ${widget.toUser}, $isUserComingFromNotificationLoading");
     if (widget.toUser == null || isUserComingFromNotificationLoading) {
       return const CircularProgressIndicator();
     }
@@ -268,15 +273,15 @@ class _UserChatScreenState extends State<UserChatScreen> {
                   } else {
                     final listOfMessages = snapshot.data?.docs;
                     list.clear();
-                    list = listOfMessages
-                            ?.map((e) => Message.fromJson(e.data()))
-                            .toList()
-                            ?.cast<Message>() ??
-                        [];
-                    marktheUnreadMessages(list, hash);
-                    lastMessageReceiveFromStream = list.first;
-                    print(
-                        "lastMessageReceiveFromStream ${lastMessageReceiveFromStream!.toJson()}");
+                    if (listOfMessages != null && listOfMessages.isNotEmpty) {
+                      list = listOfMessages
+                          .map((e) => Message.fromJson(e.data()))
+                          .toList()
+                          .cast<Message>();
+                      marktheUnreadMessages(list, hash);
+                      lastMessageReceiveFromStream = list.first;
+                    }
+
                     if (list.isNotEmpty) {
                       isMessageFound = true;
                       return Expanded(
@@ -287,7 +292,10 @@ class _UserChatScreenState extends State<UserChatScreen> {
                                 .format(element.sentAt));
                           },
                           groupComparator: (DateTime value1, DateTime value2) =>
-                              value2.compareTo(value1),
+                              value2.compareTo(value1),                  
+                          itemComparator:
+                              (Message message1, Message message2) =>
+                                  message2.sentAt.compareTo(message1.sentAt),
                           groupSeparatorBuilder: (value) => Container(
                               margin: EdgeInsets.symmetric(
                                   horizontal:
@@ -300,6 +308,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
                               child: Text(DateFormat.yMMMMd().format(value),
                                   textAlign: TextAlign.center)),
                           reverse: true,
+                          // order: GroupedListOrder.ASC,
                           padding:
                               EdgeInsets.symmetric(vertical: mq.height * 0.01),
                           physics: const ClampingScrollPhysics(),
@@ -362,7 +371,10 @@ class _UserChatScreenState extends State<UserChatScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(currentStreamData.name,
+                      Text(
+                          currentStreamData.name.isEmpty
+                              ? currentStreamData.userName
+                              : currentStreamData.name,
                           style: Theme.of(context).textTheme.titleLarge),
                       Text(
                           (currentStreamData.isOnline)

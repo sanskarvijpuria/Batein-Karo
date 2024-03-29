@@ -73,13 +73,15 @@ class _HomeScreenChatUserCardState extends State<HomeScreenChatUserCard> {
             ),
           ),
           title: Text(
-            widget.chatUser.name,
+            widget.chatUser.name.isEmpty ?  widget.chatUser.userName :  widget.chatUser.name,
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           subtitle: Text(
-            (widget.lastMessage.type == "text")
-                ? widget.lastMessage.content!
-                : "IMAGE AAYA HAI BRO.",
+            (widget.lastMessage.content == null)
+                ? ""
+                : (widget.lastMessage.type == "text")
+                    ? widget.lastMessage.content!
+                    : "IMAGE AAYA HAI BRO.",
             maxLines: 1,
           ),
           trailing: Stack(
@@ -92,7 +94,8 @@ class _HomeScreenChatUserCardState extends State<HomeScreenChatUserCard> {
                   style: const TextStyle(fontSize: 12),
                 ),
               ),
-              if (widget.lastMessage.senderId == currentUser!.uid)
+              if (widget.lastMessage.senderId != null &&
+                  widget.lastMessage.senderId == currentUser!.uid)
                 Positioned(
                   bottom: 0,
                   right: 5,

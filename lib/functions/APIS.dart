@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io' as io;
 import 'dart:io';
 import 'package:chat_app/functions/access_firebase_token.dart';
+import 'package:chat_app/functions/helper.dart';
 import 'package:chat_app/main.dart';
 import 'package:chat_app/models/chat_messages.dart';
 import 'package:chat_app/models/chat_user.dart';
@@ -18,11 +20,11 @@ import 'package:image_picker/image_picker.dart';
 ChatUser? currentUser;
 
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
-  print("Title: ${message.notification?.title}");
-  print("Body: ${message.notification?.body}");
-  print("Payload: ${message.data}");
-  print("From: ${message.from}");
-  print("Complete map: ${message.toMap()}");
+  // print("Title: ${message.notification?.title}");
+  // print("Body: ${message.notification?.body}");
+  // print("Payload: ${message.data}");
+  // print("From: ${message.from}");
+  // print("Complete map: ${message.toMap()}");
   handleMessage(message);
 }
 
@@ -82,17 +84,38 @@ class APIs {
     return snapshot;
   }
 
-  static Future<ChatUser> getSelfData() async {
-    Map<String, dynamic> data =
-        await getParticularUserData(auth.currentUser!.uid);
-    return ChatUser.fromJson(data);
+  static Future<ChatUser?> getSelfData() async {
+    // Map<String, dynamic> data =
+    //     await getParticularUserData(auth.currentUser!.uid);
+    Map<String, dynamic> data = {};
+    for (int count = 0; count < 3; count++) {
+      print("Auth Data ${auth.currentUser!.uid}");
+      data = await Future.delayed(
+        Duration(seconds: count * 3),
+        () async {
+          return await getParticularUserData(auth.currentUser!.uid);
+        },
+      );
+      // data = await getParticularUserData(auth.currentUser!.uid);
+      print("Auth Data $data");
+      if (data.isEmpty) {
+        continue;
+      } else {
+        print("Heree in else authAPIS");
+        break;
+      }
+    }
+    if (data.isEmpty) {
+      return null;
+    } else {
+      return ChatUser.fromJson(data);
+    }
   }
 
-  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllUsersExceptMe() {
-    Stream<QuerySnapshot<Map<String, dynamic>>> data = db
-        .collection("users")
-        .where("uid", isNotEqualTo: auth.currentUser!.uid)
-        .snapshots();
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getUsersIfTheyAreinList(
+      List<String> uids) {
+    Stream<QuerySnapshot<Map<String, dynamic>>> data =
+        db.collection("users").where("uid", whereIn: uids).snapshots();
 
     return data;
   }
@@ -104,7 +127,7 @@ class APIs {
 
   static Future<void> updateUserOnlineStatus(String uid, bool isOnline) async {
     print("Changing the onlinestatus of the user to $isOnline");
-    final docRef = await db
+    await db
         .collection('users')
         .doc(uid)
         .update({'is_online': isOnline, 'last_active': Timestamp.now()});
@@ -144,10 +167,9 @@ class APIs {
 
   static Future<void> updateRecentMessage(
       String user1, String user2, LastMessage lastMessage) async {
-    final docRef = FirebaseFirestore.instance
+    final docRef = db
         .collection('recent_chats')
         .doc(user1); // Replace with the logged user's UID
-
     // Get the recent chats document
     final snapshot = await docRef.get();
 
@@ -187,6 +209,37 @@ class APIs {
       String otherUserUid, LastMessage lastMessage) async {
     await updateRecentMessage(currentUserUid, otherUserUid, lastMessage);
     await updateRecentMessage(otherUserUid, currentUserUid, lastMessage);
+  }
+
+// ****************** Add Users in Recent Chat *********************
+
+  static Future<List<dynamic>> checkUserExist(String email) async {
+    final data =
+        await db.collection('users').where("email", isEqualTo: email).get();
+    if (data.docs.isEmpty || email == currentUser!.email) {
+      return [false];
+    } else {
+      final ChatUser toUser =
+          ChatUser.fromJson(data.docs.map((e) => e.data()).toList()[0]);
+
+      // Adding to recentUser List of LoggedInUser
+      final fieldToAdd = {
+        toUser.uid: {"time": Timestamp.now(), "is_read": true}
+      };
+      await db.collection("recent_chats").doc(currentUser!.uid).update({
+        "to_uids": FieldValue.arrayUnion([fieldToAdd])
+      });
+
+      // Creating a chat document between the user
+      final String hash = generateHash(currentUser!.uid, toUser.uid);
+      final chatDocument = Chat(
+          chatId: hash,
+          type: "individual",
+          participants: [currentUser!.uid, toUser.uid]);
+      await db.collection("chats").doc(hash).set(chatDocument.toJson());
+      // db.collection("chats").doc(hash).collection("messages").doc().set(chatDocument.toJson());
+      return [true, toUser];
+    }
   }
 
   // ****************** Messages ************************
@@ -258,7 +311,7 @@ class APIs {
         .doc(message.messageId)
         .delete();
 
-      // TODO: Undo in future commits.
+    // TODO: Undo in future commits.
     // if (message.type == "image") {
     //   await APIs.storageRef.refFromURL(message.content).delete();
     // }
@@ -288,11 +341,11 @@ class APIs {
       String bearerToken = await accessToken.getAccessToken();
       String url =
           "https://fcm.googleapis.com/v1/projects/$firebaseProjectID/messages:send";
-
+      String name =  currentUser!.name.isEmpty ?  currentUser!.userName :  currentUser!.name;
       final payload = {
         "message": {
           "token": toUser.pushToken,
-          "notification": {"title": currentUser!.name, "body": message},
+          "notification": {"title": name, "body": message},
           "data": {"uid": currentUser!.uid}
         }
       };

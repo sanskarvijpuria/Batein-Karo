@@ -23,17 +23,21 @@ class ChatUser {
   late final bool isOnline;
   late final DateTime? lastActive;
   late final String pushToken;
-  
-  ChatUser.fromJson(Map<String, dynamic> json){
+
+  ChatUser.fromJson(Map<String, dynamic> json) {
     uid = json['uid'];
     userImage = json['user_image'] ?? '';
     userName = json['user_name'] ?? '';
     email = json['email'] ?? '';
     name = json['name'] ?? '';
     about = json['about'] ?? '';
-    createdAt = json['created_at']  == null ? null : convertTimestamptoDatetime( json['created_at'] );
+    createdAt = json['created_at'] == null
+        ? null
+        : convertTimestamptoDatetime(json['created_at']);
     isOnline = json['is_online'] ?? false;
-    lastActive =  json['last_active']  == null ? null : convertTimestamptoDatetime( json['last_active'] );
+    lastActive = json['last_active'] == null
+        ? null
+        : convertTimestamptoDatetime(json['last_active']);
     pushToken = json['push_token'] ?? '';
   }
 

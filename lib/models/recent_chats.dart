@@ -18,7 +18,7 @@ class LastMessage {
     if (content != null) {
       return {
         'content': content,
-        'time': convertDateTimetoTomestamp(time),
+        'time': time == null ? null : convertDateTimetoTomestamp(time),
         'is_read': isRead,
         'sender_id': senderId,
         'type': type
@@ -31,22 +31,24 @@ class LastMessage {
   factory LastMessage.fromJson(Map<String, dynamic> json) {
     return LastMessage(
         content: json['content'],
-        time: convertTimestamptoDatetime(json['time']),
+        time: json['time'] == null
+            ? null
+            : convertTimestamptoDatetime(json['time']),
         isRead: json['is_read'],
-        type: json['type'],
+        type: json['type'] ?? "text",
         senderId: json['sender_id']);
   }
 }
 
 class RecentChats {
   String? uid;
-  List<String>? toUids;
+  List<Map<String, LastMessage>>? toUids;
 
   RecentChats({this.uid, this.toUids});
 
   RecentChats.fromJson(Map<String, dynamic> json) {
     uid = json['uid'];
-    toUids = json['to_uids'].cast<String>();
+    toUids = json['to_uids'];
   }
 
   Map<String, dynamic> toJson() {

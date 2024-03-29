@@ -60,6 +60,7 @@ class _AuthScreenState extends State<AuthScreen> {
               .putProfilePicturetoFirebaseStorage(_selectedImage!);
           await authFunctions.saveDataToFirestore(
               downloadURL, _enteredEmail, _enteredUsername);
+          await authFunctions.createRecentMessage();
         }
       } on Exception {
         setState(() {

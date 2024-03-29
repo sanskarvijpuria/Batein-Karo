@@ -33,11 +33,13 @@ class SignUp extends StatelessWidget {
           validator: (newValue) {
             newValue = newValue?.trim();
             if (newValue == null ||
+                newValue.length < 6 ||
                 isMatchingWithRegex("/^[a-zA-Z0-9._]{6,20}", newValue)) {
               showSnackBarWithText(
                   context,
                   "Keep it between 6 and 20 characters long. We don't want a novel for a username, just something catchy!",
                   const Duration(seconds: 5));
+              return "";
             }
             return null;
           },
