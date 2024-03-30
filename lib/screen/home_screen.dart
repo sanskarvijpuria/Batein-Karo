@@ -119,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
           } else {
             Future.delayed(Duration.zero, () async {
               await APIs.updateUserOnlineStatus(currentUser!.uid, true);
-
+    
               final notificationSettings = await APIs.askForPermission();
               if (notificationSettings.authorizationStatus ==
                   AuthorizationStatus.authorized) {
@@ -135,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
               }
             });
-
+    
             return Scaffold(
               appBar: AppBar(
                 titleSpacing: 0,
@@ -170,7 +170,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   in sortedRecentUserList) {
                                 String userUID = recentUser.keys.toList()[0];
                                 if (chat.uid == userUID) {
-                                  _searchList.add([chat, recentUser[userUID]]);
+                                  _searchList
+                                      .add([chat, recentUser[userUID]]);
                                 }
                               }
                               print("After Search list $val $_searchList");

@@ -34,6 +34,7 @@ class UserChatScreen extends StatefulWidget {
 class _UserChatScreenState extends State<UserChatScreen> {
   final TextEditingController _textController = TextEditingController();
   late Stream<QuerySnapshot<Map<String, dynamic>>> _myStream;
+  late Stream<DocumentSnapshot<Map<String, dynamic>>> _appBarStream;
   late ChatUser currentStreamData;
   String hash = "";
   bool _emojiShowing = false,
@@ -61,12 +62,13 @@ class _UserChatScreenState extends State<UserChatScreen> {
   @override
   void initState() {
     super.initState();
+    _setupChat(widget.toUser!);
   }
 
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
-    print("Userchat screen ${widget.toUser}");
+    // print("Userchat screen ${widget.toUser}");
     if (widget.toUser == null) {
       // Coming here from notification
       setState(() {
@@ -74,29 +76,31 @@ class _UserChatScreenState extends State<UserChatScreen> {
       });
       final message =
           ModalRoute.of(context)?.settings.arguments as RemoteMessage?;
-      print("Modal Message, $message");
+      // print("Modal Message, $message");
       if (message != null) {
-        print("Message UserChatScreen: ${message.toMap()}");
-        print("Message UserChatScreen UID: ${message.data["uid"]}");
+        // print("Message UserChatScreen: ${message.toMap()}");
+        // print("Message UserChatScreen UID: ${message.data["uid"]}");
         await getParticularUserDataFromNotification(message.data["uid"])
             .then((_) {
           widget.toUser = ChatUser.fromJson(toUserDataFromNotifcation!);
-          print("Here ${widget.toUser!.toJson()}");
+          // print("Here ${widget.toUser!.toJson()}");
           _setupChat(widget.toUser!);
           setState(() {
             isUserComingFromNotificationLoading = false;
           });
         });
       }
-    } else {
-      _setupChat(widget.toUser!);
     }
+    // else {
+    //   _setupChat(widget.toUser!);
+    // }
   }
 
   void _setupChat(ChatUser toUser) {
     hash = generateHash(currentUser!.uid, toUser.uid);
     _myStream = APIs.getAllMessagesBetweenUsers(hash);
     hintText = hintMessages[random.nextInt(hintMessages.length)];
+    _appBarStream = APIs.getParticularUserSnapshot(widget.toUser!.uid);
   }
 
   Future<void> getParticularUserDataFromNotification(String uid) async {
@@ -116,7 +120,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
       // and updates the recent message for both users if the message is the last one in the list.
       List<Message> messages,
       String hash) async {
-    print("heree");
+    // print("heree");
     // lastMessageSentByCurrentUser = messages.reversed.last;
     for (Message message in messages.reversed) {
       if (message.senderId != currentUser!.uid && message.seen == false) {
@@ -227,13 +231,13 @@ class _UserChatScreenState extends State<UserChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(
-        "UserChatScreen ${widget.toUser}, $isUserComingFromNotificationLoading");
+    // print(
+    //     "UserChatScreen ${widget.toUser}, $isUserComingFromNotificationLoading");
     if (widget.toUser == null || isUserComingFromNotificationLoading) {
       return const CircularProgressIndicator();
     }
     Size mq = MediaQuery.of(context).size;
-    print(Theme.of(context).colorScheme.background.withBlue(100).hex);
+    // print(Theme.of(context).colorScheme.background.withBlue(100).hex);
 
     return WillPopScope(
       onWillPop: () async {
@@ -349,7 +353,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
       elevation: 15,
       titleSpacing: 0,
       title: StreamBuilder(
-        stream: APIs.getParticularUserSnapshot(widget.toUser!.uid),
+        stream: _appBarStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting ||
               snapshot.connectionState == ConnectionState.none) {
