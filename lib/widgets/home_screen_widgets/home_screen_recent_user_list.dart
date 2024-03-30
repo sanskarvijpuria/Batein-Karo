@@ -2,7 +2,7 @@ import 'package:chat_app/functions/APIS.dart';
 import 'package:chat_app/models/chat_user.dart';
 import 'package:chat_app/models/recent_chats.dart';
 import 'package:chat_app/screen/home_screen.dart';
-import 'package:chat_app/widgets/home_screen_user_card.dart';
+import 'package:chat_app/widgets/home_screen_widgets/home_screen_user_card.dart';
 import 'package:flutter/material.dart';
 
 class RecentChatsList extends StatelessWidget {

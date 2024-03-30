@@ -7,7 +7,7 @@ import 'package:chat_app/models/chat_user.dart';
 import 'package:chat_app/models/messages.dart';
 import 'package:chat_app/models/recent_chats.dart';
 import 'package:chat_app/screen/to_user_profile_screen.dart';
-import 'package:chat_app/widgets/message_card.dart';
+import 'package:chat_app/widgets/message_card_widgets/message_card.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';

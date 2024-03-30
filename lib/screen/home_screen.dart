@@ -1,8 +1,8 @@
 import 'package:chat_app/functions/APIS.dart';
 import 'package:chat_app/models/chat_user.dart';
-import 'package:chat_app/widgets/add_user_dialog.dart';
-import 'package:chat_app/widgets/kebab_menu.dart';
-import 'package:chat_app/widgets/home_screen_recent_user_list.dart';
+import 'package:chat_app/widgets/home_screen_widgets/add_user_dialog.dart';
+import 'package:chat_app/widgets/home_screen_widgets/kebab_menu.dart';
+import 'package:chat_app/widgets/home_screen_widgets/home_screen_recent_user_list.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';

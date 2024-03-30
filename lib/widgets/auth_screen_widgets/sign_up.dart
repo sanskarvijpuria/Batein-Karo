@@ -1,5 +1,5 @@
 import 'package:chat_app/functions/helper.dart';
-import 'package:chat_app/widgets/user_image_picker.dart';
+import 'package:chat_app/widgets/auth_screen_widgets/user_image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 

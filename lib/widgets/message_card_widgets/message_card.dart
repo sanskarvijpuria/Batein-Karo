@@ -1,7 +1,7 @@
 import 'package:chat_app/functions/APIS.dart';
 import 'package:chat_app/functions/helper.dart';
 import 'package:chat_app/models/messages.dart';
-import 'package:chat_app/widgets/option_items.dart';
+import 'package:chat_app/widgets/message_card_widgets/option_items.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';

@@ -4,7 +4,7 @@ import 'package:chat_app/functions/helper.dart';
 import 'package:chat_app/models/chat_user.dart';
 import 'package:chat_app/models/recent_chats.dart';
 import 'package:chat_app/screen/user_chat_screen.dart';
-import 'package:chat_app/widgets/profile_dialog.dart';
+import 'package:chat_app/widgets/home_screen_widgets/profile_dialog.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreenChatUserCard extends StatefulWidget {
