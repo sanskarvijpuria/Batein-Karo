@@ -179,7 +179,8 @@ class _MessageCardCardState extends State<MessageCard>
         // One Emoji Case
         hasOnlyOneEmoji = true;
         fontSize = 40;
-        if (unemojify.contains(":heart:") || unemojify.contains(":two_hearts:")) {
+        if (unemojify.contains(":heart:") ||
+            unemojify.contains(":two_hearts:")) {
           // Only in this case we will see if the only emoji is heart.
           isHeartEmoji = true;
           fontSize = 48;
@@ -222,17 +223,12 @@ class _MessageCardCardState extends State<MessageCard>
             : colorScheme.onTertiaryContainer,
       ),
     );
+
     if (isHeartEmoji) {
       content = Padding(
         padding: const EdgeInsets.only(bottom: 5.0),
         child: ScaleTransition(
           scale: _scaleAnimation,
-          // child: Image.asset(
-          //   "assets/images/heart.png",
-          //   // scale: 0.8,
-          //   height: 90,
-          //   width: 90,
-          // ),
           child: content,
         ),
       );
@@ -342,7 +338,6 @@ class _MessageCardCardState extends State<MessageCard>
     ///
     /// Returns:
     /// A `Widget` representing the stack of containers and content.
-    print(widget.message.editedAt);
     return Stack(
       children: [
         Container(

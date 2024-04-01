@@ -146,6 +146,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
 
   void _pickImageAndUpload({bool isCamera = true}) async {
     // A function to pick an image either from the camera or gallery and send it to Firebase storage.
+    selectedImages.clear();
     if (isCamera) {
       XFile? temp = await pickImageUsingImagePicker(isCamera: isCamera);
       if (temp != null) {
@@ -296,7 +297,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
                                 .format(element.sentAt));
                           },
                           groupComparator: (DateTime value1, DateTime value2) =>
-                              value2.compareTo(value1),                  
+                              value2.compareTo(value1),
                           itemComparator:
                               (Message message1, Message message2) =>
                                   message2.sentAt.compareTo(message1.sentAt),
@@ -318,6 +319,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
                           physics: const ClampingScrollPhysics(),
                           itemBuilder: (context, element) {
                             return MessageCard(
+                              key: Key(element.messageId),
                               message: element,
                               hash: hash,
                             );
