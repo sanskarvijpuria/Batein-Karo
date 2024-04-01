@@ -1,11 +1,19 @@
 import 'package:chat_app/functions/helper.dart';
+import 'package:chat_app/models/messages.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 
 class PhotoViewer extends StatefulWidget {
-  const PhotoViewer({super.key, required this.image, required this.imageURL});
+  PhotoViewer(
+      {super.key,
+      required this.image,
+      required this.name,
+      this.message,
+      this.profileDialog = false});
   final ImageProvider image;
-  final String imageURL;
+  Message? message;
+  String name;
+  bool profileDialog;
 
   @override
   _PhotoViewerState createState() => _PhotoViewerState();
@@ -18,15 +26,29 @@ class _PhotoViewerState extends State<PhotoViewer> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.transparent.withOpacity(0.4),
         automaticallyImplyLeading: _isShowAppBar ? true : false,
+        title: _isShowAppBar
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(widget.name,
+                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                        fontWeight: FontWeight.w500
+                      )),
+                  if (widget.profileDialog == false)
+                    Text(formatMessageSentTime(widget.message!.sentAt),
+                        style: Theme.of(context).textTheme.titleSmall),
+                ],
+              )
+            : null,
         actions: [
-          if (_isShowAppBar)
+          if (widget.profileDialog == false && _isShowAppBar)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: IconButton(
                 onPressed: () async {
-                  await downloadImage(context, widget.imageURL);
+                  await downloadImage(context, widget.message!.content);
                 },
                 icon: const Icon(Icons.download),
               ),

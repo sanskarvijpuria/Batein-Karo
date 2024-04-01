@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_app/functions/helper.dart';
 import 'package:chat_app/models/chat_user.dart';
+import 'package:chat_app/widgets/photo_viewer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -41,34 +42,28 @@ class OtherUserProfileScreen extends StatelessWidget {
 
   Widget _buildProfilePicture(BuildContext context, Size mq) {
     return InkWell(
-      customBorder: CircleBorder(),
+      customBorder: const CircleBorder(),
       onTap: () {
-        showAdaptiveDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog.adaptive(
-                  content: CachedNetworkImage(
-                imageUrl: toUser.userImage,
-                imageBuilder: (context, imageProvider) => Container(
-                  width: mq.height * 0.50,
-                  height: mq.height * 0.50,
-                  decoration: BoxDecoration(
-                    color: null,
-                    shape: BoxShape.circle,
-                    image: DecorationImage(
-                        image: imageProvider, fit: BoxFit.contain),
-                  ),
-                ),
-                placeholder: (context, url) => const Center(
-                  child: CircularProgressIndicator(),
-                ),
-                errorWidget: (context, url, error) => const Icon(Icons.error),
-              ));
-            });
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PhotoViewer(
+                image: CachedNetworkImageProvider(toUser.userImage),
+                name: toUser.name.isEmpty
+                    ? toUser.userName
+                    : toUser.name,
+                profileDialog: true,
+              ),
+            ),
+          );
       },
-      child: CircleAvatar(
-        radius: mq.height * 0.12, // Fixed size for profile picture
-        backgroundImage: CachedNetworkImageProvider(toUser.userImage),
+      child: Hero(
+        tag: "image_open",
+        transitionOnUserGestures: true,
+        child: CircleAvatar(
+          radius: mq.height * 0.12, // Fixed size for profile picture
+          backgroundImage: CachedNetworkImageProvider(toUser.userImage),
+        ),
       ),
     );
   }

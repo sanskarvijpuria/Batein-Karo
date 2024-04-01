@@ -17,21 +17,23 @@ class ProfileDialog extends StatelessWidget {
         textAlign: TextAlign.center,
       ),
       titleTextStyle: TextStyle(
-          fontSize: 30, color: Theme.of(context).colorScheme.onBackground),
+          fontWeight: FontWeight.w600,
+          fontSize: 30,
+          color: Theme.of(context).colorScheme.onBackground),
       contentPadding: EdgeInsets.only(
           top: mq.height * 0.015, right: 20, left: 20, bottom: 10),
+
       content: Stack(
-        alignment: Alignment.center,
         children: [
           CachedNetworkImage(
             imageUrl: toUser.userImage,
             imageBuilder: (context, imageProvider) => Container(
-              width: mq.height * 0.40,
-              height: mq.height * 0.40,
+              width: mq.height * 0.50,
+              height: mq.height * 0.35,
               decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.background,
                 shape: BoxShape.circle,
-                image:
-                    DecorationImage(image: imageProvider, fit: BoxFit.contain),
+                image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
               ),
             ),
             placeholder: (context, url) => const Center(

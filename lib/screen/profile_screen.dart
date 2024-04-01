@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_app/functions/APIS.dart';
 import 'package:chat_app/functions/helper.dart';
 import 'package:chat_app/models/chat_user.dart';
+import 'package:chat_app/widgets/photo_viewer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -213,10 +215,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildProfilePicture(AsyncSnapshot snapshot) {
     return Stack(
       children: [
-        CircleAvatar(
-          radius: mq.height * 0.12,
-          backgroundImage:
-              _pickedImage ?? Image.network(snapshot.data.userImage).image,
+        GestureDetector(
+          onTap: (){
+               Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PhotoViewer(
+                image: CachedNetworkImageProvider(snapshot.data.userImage),
+                name: "Profile Photo",
+                profileDialog: true,
+              ),
+            ),
+          );
+          },
+          child: CircleAvatar(
+            radius: mq.height * 0.12,
+            backgroundImage: _pickedImage ??
+                Image(
+                  image: CachedNetworkImageProvider(
+                    snapshot.data.userImage,
+                  ),
+                  fit: BoxFit.fill,
+                  loadingBuilder: (BuildContext context, Widget child,
+                      ImageChunkEvent? loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                            : null,
+                      ),
+                    );
+                  },
+                ).image,
+          ),
         ),
         Positioned(
           bottom: 0,

@@ -8,6 +8,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -119,7 +120,8 @@ class _HomeScreenState extends State<HomeScreen> {
           } else {
             Future.delayed(Duration.zero, () async {
               await APIs.updateUserOnlineStatus(currentUser!.uid, true);
-    
+              final permissionStatus = await Permission.photos.request();
+              print(permissionStatus.toString());
               final notificationSettings = await APIs.askForPermission();
               if (notificationSettings.authorizationStatus ==
                   AuthorizationStatus.authorized) {
@@ -135,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
               }
             });
-    
+
             return Scaffold(
               appBar: AppBar(
                 titleSpacing: 0,
@@ -170,8 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   in sortedRecentUserList) {
                                 String userUID = recentUser.keys.toList()[0];
                                 if (chat.uid == userUID) {
-                                  _searchList
-                                      .add([chat, recentUser[userUID]]);
+                                  _searchList.add([chat, recentUser[userUID]]);
                                 }
                               }
                               print("After Search list $val $_searchList");
@@ -218,6 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
               body: StreamBuilder(
                 stream: APIs.getAllRecentUsers(currentUser!.uid),
                 builder: (context, snapshot) {
+                  localNotifcation.cancelAll();
                   if (snapshot.connectionState == ConnectionState.waiting ||
                       snapshot.connectionState == ConnectionState.none) {
                     return const Center(

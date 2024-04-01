@@ -1,4 +1,4 @@
-import 'dart:math';  
+import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_app/functions/APIS.dart';
 import 'package:chat_app/functions/helper.dart';
@@ -62,13 +62,15 @@ class _UserChatScreenState extends State<UserChatScreen> {
   @override
   void initState() {
     super.initState();
-    _setupChat(widget.toUser!);
+    if (widget.toUser != null) {
+      _setupChat(widget.toUser!);
+    }
   }
 
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
-    // print("Userchat screen ${widget.toUser}");
+    print("Userchat screen ${widget.toUser}");
     if (widget.toUser == null) {
       // Coming here from notification
       setState(() {
@@ -76,15 +78,16 @@ class _UserChatScreenState extends State<UserChatScreen> {
       });
       final message =
           ModalRoute.of(context)?.settings.arguments as RemoteMessage?;
-      // print("Modal Message, $message");
+      print("Modal Message, $message");
       if (message != null) {
-        // print("Message UserChatScreen: ${message.toMap()}");
-        // print("Message UserChatScreen UID: ${message.data["uid"]}");
+        print("Message UserChatScreen: ${message.toMap()}");
+        print("Message UserChatScreen UID: ${message.data["uid"]}");
         await getParticularUserDataFromNotification(message.data["uid"])
             .then((_) {
           widget.toUser = ChatUser.fromJson(toUserDataFromNotifcation!);
-          // print("Here ${widget.toUser!.toJson()}");
+          print("Message UserChatScreen ${widget.toUser!.toJson()}");
           _setupChat(widget.toUser!);
+          localNotifcation.cancelAll();
           setState(() {
             isUserComingFromNotificationLoading = false;
           });
@@ -235,7 +238,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
     // print(
     //     "UserChatScreen ${widget.toUser}, $isUserComingFromNotificationLoading");
     if (widget.toUser == null || isUserComingFromNotificationLoading) {
-      return const CircularProgressIndicator();
+      return const Center(child: CircularProgressIndicator());
     }
     Size mq = MediaQuery.of(context).size;
     // print(Theme.of(context).colorScheme.background.withBlue(100).hex);
@@ -322,6 +325,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
                               key: Key(element.messageId),
                               message: element,
                               hash: hash,
+                              toUser: widget.toUser!,
                             );
                           },
                         ),

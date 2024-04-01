@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:chat_app/main.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_emoji/flutter_emoji.dart';
+import 'package:permission_handler/permission_handler.dart';
 import "package:universal_html/html.dart" as html;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -174,15 +176,24 @@ Future<void> downloadImage(BuildContext context, String content) async {
             downloadName: "${DateTime.now()}.jpg");
       });
     } else {
-      await GallerySaver.saveImage("$content.jpg", albumName: "Batein Karo")
-          .then(
-        (success) {
-          if (success != null) {
-            showSnackBarWithText(
-                context, "Image saved to Gallery", const Duration(seconds: 3));
-          }
-        },
-      );
+      if (await Permission.photos.isGranted) {
+        await GallerySaver.saveImage("$content.jpg", albumName: "Batein Karo")
+            .then(
+          (success) {
+            if (success != null) {
+              showSnackBarWithText(context, "Image saved to Gallery",
+                  const Duration(seconds: 3));
+            }
+          },
+        );
+      } else {
+        showSnackBarWithText(
+          navigatorKey.currentContext!,
+          "Please Provide Photos Permission",
+          const Duration(seconds: 3),
+        );
+        await Permission.photos.shouldShowRequestRationale;
+      }
     }
   } on Exception catch (err) {
     print("Error in Saving Image , $err");
@@ -191,21 +202,21 @@ Future<void> downloadImage(BuildContext context, String content) async {
   }
 }
 
-  bool hasOnlyEmojis(String input) {
-    // find all emojis
-    final emojis = EmojiParser().parseEmojis(input);
+bool hasOnlyEmojis(String input) {
+  // find all emojis
+  final emojis = EmojiParser().parseEmojis(input);
 
-    // return if none found
-    if (emojis.isEmpty) return false;
+  // return if none found
+  if (emojis.isEmpty) return false;
 
-    // remove all emojis from the input
-    for (final emoji in emojis) {
-      input = input.replaceAll(emoji, "");
-    }
-
-    // remove all whitespace (optional)
-    input = input.replaceAll(" ", "");
-
-    // return true if nothing else left
-    return input.isEmpty;
+  // remove all emojis from the input
+  for (final emoji in emojis) {
+    input = input.replaceAll(emoji, "");
   }
+
+  // remove all whitespace (optional)
+  input = input.replaceAll(" ", "");
+
+  // return true if nothing else left
+  return input.isEmpty;
+}

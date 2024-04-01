@@ -16,9 +16,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart' as flocalnotifcation;
 
 ChatUser? currentUser;
 final _firebaseMessaging = FirebaseMessaging.instance;
+ final flocalnotifcation.FlutterLocalNotificationsPlugin localNotifcation = flocalnotifcation.FlutterLocalNotificationsPlugin();
 
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
   // print("Title: ${message.notification?.title}");
@@ -33,16 +35,16 @@ void handleMessage(RemoteMessage? message) {
   if (message == null)
     return;
   else {
-    print("HandleMessage $message");
+    print("HandleMessage ${message.data}");
     navigatorKey.currentState
         ?.pushNamed("/user_chat_screen", arguments: message);
   }
 }
 
 Future initPushNotifications() async {
+  // await
   await _firebaseMessaging.setForegroundNotificationPresentationOptions(
       alert: true, badge: true, sound: true);
-
   await _firebaseMessaging.getInitialMessage().then(handleMessage);
   await FirebaseMessaging.onMessageOpenedApp.listen(
     (RemoteMessage message) {

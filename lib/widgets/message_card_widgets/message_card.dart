@@ -1,9 +1,10 @@
 import 'package:chat_app/functions/APIS.dart';
 import 'package:chat_app/functions/helper.dart';
+import 'package:chat_app/models/chat_user.dart';
 import 'package:chat_app/models/messages.dart';
 import 'package:chat_app/widgets/message_card_widgets/edit_message_dialog.dart';
 import 'package:chat_app/widgets/message_card_widgets/option_items.dart';
-import 'package:chat_app/widgets/message_card_widgets/photo_viewer.dart';
+import 'package:chat_app/widgets/photo_viewer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -11,9 +12,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_emoji/flutter_emoji.dart';
 
 class MessageCard extends StatefulWidget {
-  const MessageCard({super.key, required this.message, required this.hash});
+  const MessageCard(
+      {super.key,
+      required this.message,
+      required this.hash,
+      required this.toUser});
   final Message message;
   final String hash;
+  final ChatUser toUser;
 
   @override
   State<MessageCard> createState() => _MessageCardCardState();
@@ -281,7 +287,12 @@ class _MessageCardCardState extends State<MessageCard>
             MaterialPageRoute(
               builder: (context) => PhotoViewer(
                 image: NetworkImage(widget.message.content),
-                imageURL: widget.message.content,
+                message: widget.message,
+                name: isSender
+                    ? "You"
+                    : widget.toUser.name.isEmpty
+                        ? widget.toUser.userName
+                        : widget.toUser.name,
               ),
             ),
           );
@@ -343,7 +354,7 @@ class _MessageCardCardState extends State<MessageCard>
         Container(
           constraints: BoxConstraints(
               minWidth:
-                  (widget.message.editedAt != null) ? 120 : mq.width * 0.2,
+                  (widget.message.editedAt != null) ? 120 : mq.width * 0.3,
               maxWidth: mq.width * 0.8),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
           decoration: BoxDecoration(
@@ -393,7 +404,11 @@ class _MessageCardCardState extends State<MessageCard>
                       if (widget.message.seen == false)
                         const Icon(Icons.done, size: 12),
                       if (widget.message.seen)
-                        const Icon(Icons.done_all, size: 12)
+                        Icon(
+                          Icons.done_all,
+                          size: 12,
+                          color: Colors.blueAccent.shade700,
+                        )
                     ],
                   ],
                 ),
