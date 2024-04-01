@@ -1,13 +1,14 @@
 import 'package:chat_app/functions/APIS.dart';
 import 'package:chat_app/functions/helper.dart';
 import 'package:chat_app/models/messages.dart';
+import 'package:chat_app/widgets/message_card_widgets/edit_message_dialog.dart';
 import 'package:chat_app/widgets/message_card_widgets/option_items.dart';
+import 'package:chat_app/widgets/message_card_widgets/photo_viewer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/services.dart';
-import 'package:gallery_saver_updated/gallery_saver.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_emoji/flutter_emoji.dart';
 
 class MessageCard extends StatefulWidget {
   const MessageCard({super.key, required this.message, required this.hash});
@@ -18,13 +19,48 @@ class MessageCard extends StatefulWidget {
   State<MessageCard> createState() => _MessageCardCardState();
 }
 
-class _MessageCardCardState extends State<MessageCard> {
+class _MessageCardCardState extends State<MessageCard>
+    with TickerProviderStateMixin {
   bool isArrowButtonActive = false;
+  bool hasOnlyOneEmoji = false;
+  bool hasOnlyMultipleEmojis = false;
+  bool isHeartEmoji = false;
+  double fontSize = 18;
+  late AnimationController animationController;
+  late final Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    )
+      ..forward()
+      ..repeat(reverse: true);
+    _scaleAnimation = Tween<double>(begin: 1, end: 1.2).animate(CurvedAnimation(
+        parent: animationController, curve: Curves.bounceInOut));
+  }
+
+  @override
+  void dispose() {
+    animationController.dispose();
+    super.dispose();
+  }
 
   void _showBottomSheet(Size mq, bool isSender) {
     Widget divider = Divider(
       color: Theme.of(context).dividerColor.withOpacity(0.2),
     );
+
+    // To show edit button or not. Depending on the various conditions.
+    // Content should be text sent within 15 minutes.
+    DateTime currentTime = DateTime.now();
+    bool toShowEditButton = (widget.message.type == "text" &&
+            isSender &&
+            currentTime.difference(widget.message.sentAt).inMinutes <= 15)
+        ? true
+        : false;
 
     showModalBottomSheet(
       context: context,
@@ -71,49 +107,25 @@ class _MessageCardCardState extends State<MessageCard> {
                     ),
                     name: "Save image",
                     onTap: () async {
-                      try {
-                        print("IMAGE URL ${widget.message.content}");
-                        if (kIsWeb) {
-                          await http
-                              .get(Uri.parse(widget.message.content))
-                              .then((res) {
-                            download(res.bodyBytes,
-                                downloadName: "${DateTime.now()}.jpg");
-                          });
-                        } else {
-                          await GallerySaver.saveImage(
-                                  "${widget.message.content}.jpg",
-                                  albumName: "Batein Karo")
-                              .then(
-                            (success) {
-                              if (success != null) {
-                                showSnackBarWithText(
-                                    context,
-                                    "Image saved to Gallery",
-                                    const Duration(seconds: 3));
-                              }
-                            },
-                          );
-                        }
-                      } on Exception catch (err) {
-                        print("Error in Saving Image , $err");
-                        // TODO
-                      } finally {
-                        Navigator.pop(context);
-                      }
+                      await downloadImage(context, widget.message.content);
                     }),
               divider,
-              // TODO: Part of version 2
-              // if (widget.message.type == "text" && isSender)
-              //   OptionItem(
-              //     icon: Icon(
-              //       Icons.edit,
-              //       color: Colors.blue.shade800,
-              //       size: 30,
-              //     ),
-              //     name: "Edit message",
-              //     onTap: () {},
-              //   ),
+              if (toShowEditButton)
+                OptionItem(
+                  icon: Icon(
+                    Icons.edit,
+                    color: Colors.blue.shade800,
+                    size: 30,
+                  ),
+                  name: "Edit message",
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => EditMessageDialog(
+                          message: widget.message, hash: widget.hash),
+                    ));
+                  },
+                ),
               if (isSender)
                 OptionItem(
                   icon: Icon(
@@ -157,7 +169,32 @@ class _MessageCardCardState extends State<MessageCard> {
     );
   }
 
-  @override
+  void checkEmojis(String content) {
+    var parser = EmojiParser();
+    String unemojify = parser.unemojify(content);
+    print("Emoji Code and types: $unemojify");
+    int length = content.length;
+    if (hasOnlyEmojis(content)) {
+      if (length == 2) {
+        // One Emoji Case
+        hasOnlyOneEmoji = true;
+        fontSize = 40;
+        if (unemojify.contains(":heart:") || unemojify.contains(":two_hearts:")) {
+          // Only in this case we will see if the only emoji is heart.
+          isHeartEmoji = true;
+          fontSize = 48;
+          print("Yes the string contents the heart. $content");
+        }
+      } else if (length == 4) {
+        fontSize = 36;
+      } else if (length == 6) {
+        fontSize = 30;
+      } else {
+        fontSize = 24;
+      }
+    }
+  }
+
   Widget _buildContent(ColorScheme colorScheme, bool isSender) {
     /// Builds the content widget based on the given color scheme and sender information.
     /// Content Widget is used to display the text or image based on the messageType.
@@ -168,41 +205,68 @@ class _MessageCardCardState extends State<MessageCard> {
     ///
     /// Returns:
     ///   - The built content widget.
+
+    final messageContent = widget.message.content;
+
+    // This function will check the emojis status, whether string has only emojis and if yes then
+    // how many and accordingly will set the bools to their values and also update the fontsize.
+    checkEmojis(messageContent);
+
     Widget content = Text(
-      widget.message.content,
+      messageContent,
+      textWidthBasis: TextWidthBasis.longestLine,
       style: TextStyle(
-        fontSize: 15,
+        fontSize: fontSize,
         color: isSender
             ? colorScheme.onPrimaryContainer
             : colorScheme.onTertiaryContainer,
       ),
     );
+    if (isHeartEmoji) {
+      content = Padding(
+        padding: const EdgeInsets.only(bottom: 5.0),
+        child: ScaleTransition(
+          scale: _scaleAnimation,
+          // child: Image.asset(
+          //   "assets/images/heart.png",
+          //   // scale: 0.8,
+          //   height: 90,
+          //   width: 90,
+          // ),
+          child: content,
+        ),
+      );
+    }
 
     if (widget.message.type == "image") {
-      content = CachedNetworkImage(
-        imageUrl: widget.message.content,
-        placeholder: (context, url) => const Icon(Icons.image),
-        errorWidget: (context, url, error) => const Icon(Icons.error),
-        imageBuilder: (context, imageProvider) {
-          return Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.rectangle,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.onBackground,
+      content = Hero(
+        tag: "image_open",
+        transitionOnUserGestures: true,
+        child: CachedNetworkImage(
+          imageUrl: messageContent,
+          placeholder: (context, url) => const Icon(Icons.image),
+          errorWidget: (context, url, error) => const Icon(Icons.error),
+          imageBuilder: (context, imageProvider) {
+            return Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.rectangle,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.onBackground,
+                ),
               ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Image(
-                image: imageProvider,
-                fit: BoxFit.contain,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Image(
+                  image: imageProvider,
+                  fit: BoxFit.contain,
+                ),
               ),
-            ),
-          );
-        },
-        width: 200,
-        height: 200,
+            );
+          },
+          width: 200,
+          height: 200,
+        ),
       );
     }
     return content;
@@ -214,6 +278,19 @@ class _MessageCardCardState extends State<MessageCard> {
     // This widget is used to build the options menu button or gesture depending on the platform.
 
     Widget options = GestureDetector(
+      onTap: () {
+        if (widget.message.type == "image") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PhotoViewer(
+                image: NetworkImage(widget.message.content),
+                imageURL: widget.message.content,
+              ),
+            ),
+          );
+        }
+      },
       onLongPress: () {
         print("Long press detected");
         _showBottomSheet(mq, isSender);
@@ -265,12 +342,14 @@ class _MessageCardCardState extends State<MessageCard> {
     ///
     /// Returns:
     /// A `Widget` representing the stack of containers and content.
-
+    print(widget.message.editedAt);
     return Stack(
       children: [
         Container(
           constraints: BoxConstraints(
-              minWidth: mq.width * 0.2, maxWidth: mq.width * 0.8),
+              minWidth:
+                  (widget.message.editedAt != null) ? 120 : mq.width * 0.2,
+              maxWidth: mq.width * 0.8),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
@@ -285,7 +364,7 @@ class _MessageCardCardState extends State<MessageCard> {
                     ? const EdgeInsets.only(
                         top: 5.0, bottom: 20, left: 7.5, right: 7.5)
                     : const EdgeInsets.only(
-                        top: 10.0, bottom: 15, left: 15, right: 15),
+                        top: 5.0, bottom: 15, left: 8, right: 8),
                 child: content,
               ),
               Positioned(
@@ -293,6 +372,18 @@ class _MessageCardCardState extends State<MessageCard> {
                 right: 0,
                 child: Row(
                   children: [
+                    if (widget.message.editedAt != null)
+                      Text(
+                        "Edited",
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: isSender
+                                ? colorScheme.onPrimaryContainer
+                                    .withOpacity(0.7)
+                                : colorScheme.onTertiaryContainer
+                                    .withOpacity(0.7)),
+                      ),
+                    const SizedBox(width: 5),
                     Text(
                       extractTimeFromDateTime(widget.message.sentAt),
                       style: TextStyle(
@@ -344,6 +435,7 @@ class _MessageCardCardState extends State<MessageCard> {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     Size mq = MediaQuery.of(context).size;
     // Build content based on message type
+
     final Widget content = _buildContent(colorScheme, isSender);
 
     // Build options widget

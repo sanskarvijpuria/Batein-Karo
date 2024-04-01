@@ -18,6 +18,7 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 
 ChatUser? currentUser;
+final _firebaseMessaging = FirebaseMessaging.instance;
 
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
   // print("Title: ${message.notification?.title}");
@@ -39,10 +40,10 @@ void handleMessage(RemoteMessage? message) {
 }
 
 Future initPushNotifications() async {
-  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+  await _firebaseMessaging.setForegroundNotificationPresentationOptions(
       alert: true, badge: true, sound: true);
 
-  await FirebaseMessaging.instance.getInitialMessage().then(handleMessage);
+  await _firebaseMessaging.getInitialMessage().then(handleMessage);
   await FirebaseMessaging.onMessageOpenedApp.listen(
     (RemoteMessage message) {
       print("Background Notifcation Message Tapped");
@@ -56,7 +57,6 @@ class APIs {
   static FirebaseFirestore db = FirebaseFirestore.instance;
   static FirebaseAuth auth = FirebaseAuth.instance;
   static FirebaseStorage storageRef = FirebaseStorage.instance;
-  static FirebaseMessaging fCMessaging = FirebaseMessaging.instance;
   String firebaseProjectID = "flutter-chat-by-sanskar";
 
   // ****************** User Data Get and Update *********************
@@ -317,14 +317,37 @@ class APIs {
     // }
   }
 
+  static Future<void> editMessage(
+      String hash, Message message, String newMessageText) async {
+    // The below code is completely optional. We are saving the deleted message in the different folder.
+    // TODO: Remove this in future. Also correct the image code accoridngly.
+
+    Map<String, dynamic> editMessage = message.toJson();
+    editMessage["edited_at"] = Timestamp.now();
+    await db
+        .collection("EditedChats")
+        .doc(hash.toString())
+        .collection("messages")
+        .doc(message.messageId)
+        .set(editMessage);
+
+    await db
+        .collection('chats')
+        .doc(hash)
+        .collection('messages')
+        .doc(message.messageId)
+        .update({"content": newMessageText, "edited_at": Timestamp.now()});
+  }
+
   // ****************** Push Notifications ************************
   static Future<String?> getPushToken() async {
-    String? pushToken = await fCMessaging.getToken();
+    String? pushToken = await _firebaseMessaging.getToken();
     return pushToken;
   }
 
   static Future<NotificationSettings> askForPermission() async {
-    NotificationSettings notifications = await fCMessaging.requestPermission();
+    NotificationSettings notifications =
+        await _firebaseMessaging.requestPermission();
     print('User granted permission: ${notifications.authorizationStatus}');
     return notifications;
   }
@@ -341,7 +364,8 @@ class APIs {
       String bearerToken = await accessToken.getAccessToken();
       String url =
           "https://fcm.googleapis.com/v1/projects/$firebaseProjectID/messages:send";
-      String name =  currentUser!.name.isEmpty ?  currentUser!.userName :  currentUser!.name;
+      String name =
+          currentUser!.name.isEmpty ? currentUser!.userName : currentUser!.name;
       final payload = {
         "message": {
           "token": toUser.pushToken,

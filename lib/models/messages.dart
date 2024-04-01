@@ -8,6 +8,7 @@ class Message {
   String type;
   bool seen;
   DateTime? seenAt;
+  DateTime? editedAt;
 
   Message(
       {required this.messageId,
@@ -16,7 +17,8 @@ class Message {
       required this.sentAt,
       this.type = 'text',
       this.seen = false,
-      this.seenAt});
+      this.seenAt,
+      this.editedAt});
 
   Map<String, dynamic> toJson() {
     return {
@@ -26,20 +28,25 @@ class Message {
       'sent_at': sentAt,
       'type': type,
       'seen': seen,
-      'seen_at': seenAt
+      'seen_at': seenAt,
+      'edited_at': editedAt
     };
   }
 
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
-        messageId: json['message_id'] ?? ' ',
-        senderId: json['sender_id'],
-        content: json['content'],
-        sentAt: convertTimestamptoDatetime(json['sent_at']),
-        type: json['type'],
-        seen: json['seen'] ?? false,
-        seenAt: json['seen_at'] == null
-            ? null
-            : convertTimestamptoDatetime(json['seen_at']));
+      messageId: json['message_id'] ?? ' ',
+      senderId: json['sender_id'],
+      content: json['content'],
+      sentAt: convertTimestamptoDatetime(json['sent_at']),
+      type: json['type'],
+      seen: json['seen'] ?? false,
+      editedAt: json['edited_at'] == null
+          ? null
+          : convertTimestamptoDatetime(json['edited_at']),
+      seenAt: json['seen_at'] == null
+          ? null
+          : convertTimestamptoDatetime(json['seen_at']),
+    );
   }
 }

@@ -1,35 +1,37 @@
 import 'package:chat_app/functions/APIS.dart';
 import 'package:chat_app/functions/helper.dart';
-import 'package:chat_app/main.dart';
-
-import 'package:chat_app/models/chat_user.dart';
-
-import 'package:chat_app/screen/user_chat_screen.dart';
+import 'package:chat_app/models/messages.dart';
 import 'package:flutter/material.dart';
 
-class AddUserDialog extends StatelessWidget {
-  const AddUserDialog({super.key, required this.alreadyConnectedUser});
-  final List<ChatUser> alreadyConnectedUser;
-  Future<bool> _checkUserIfAlreadyExists(String email) {
-    // Check if email exists in alreadyConnectedUser list
-    for (ChatUser user in alreadyConnectedUser) {
-      if (email == user.email) {
-        return Future.value(true); // User already exists
-      }
-    }
-    return Future.value(false); // User not found locally
+class EditMessageDialog extends StatefulWidget {
+  const EditMessageDialog(
+      {super.key, required this.message, required this.hash});
+  final Message message;
+  final String hash;
+
+  @override
+  State<EditMessageDialog> createState() => _EditMessageDialogState();
+}
+
+class _EditMessageDialogState extends State<EditMessageDialog> {
+  late TextEditingController _textController;
+
+  @override
+  void initState() {
+    super.initState();
+    _textController = TextEditingController.fromValue(
+        TextEditingValue(text: widget.message.content));
   }
 
   @override
   Widget build(BuildContext context) {
-    String email = '';
     Size mq = MediaQuery.of(context).size;
     final double buttonHeight = mq.height * 0.05;
     final double buttonWidth = mq.width * 0.35;
     Size buttonSize = Size(buttonWidth, buttonHeight);
     return AlertDialog.adaptive(
       title: const Text(
-        "Add User",
+        "Edit message",
         textAlign: TextAlign.left,
       ),
       titlePadding:
@@ -48,12 +50,11 @@ class AddUserDialog extends StatelessWidget {
       content: SizedBox(
         width: 300,
         child: TextField(
+          controller: _textController,
           maxLines: null,
-          onChanged: (value) => email = value.trim(),
           decoration: InputDecoration(
-            hintText: 'Email Id',
             prefixIcon: const Icon(
-              Icons.email,
+              Icons.edit_note,
               color: Colors.blue,
             ),
             border: OutlineInputBorder(
@@ -80,43 +81,25 @@ class AddUserDialog extends StatelessWidget {
         ),
         ElevatedButton.icon(
           onPressed: () async {
-            Navigator.pop(context);
-            if (email.isNotEmpty) {
-              bool userExists = await _checkUserIfAlreadyExists(email);
-              if (userExists) {
-                // User already exists, show snackbar
-                showSnackBarWithText(
-                  navigatorKey.currentContext!,
-                  'User already exists!',
-                  const Duration(seconds: 3),
-                );
-              } else {
-                // Check user existence on server
-                final result = await APIs.checkUserExist(email);
-
-                if (!result[0]) {
-                  showSnackBarWithText(
-                    navigatorKey.currentContext!,
-                    'User does not Exists!',
-                    const Duration(seconds: 3),
-                  );
-                } else {
-                  Navigator.push(
-                    navigatorKey.currentContext!,
-                    MaterialPageRoute(
-                      builder: (context) => UserChatScreen(result[1]),
-                    ),
-                  );
-
-                  // Navigate to UserChatScreen
-                }
-              }
+            final String newValue = _textController.value.text.trim();
+            if (newValue != widget.message.content && newValue.isEmpty) {
+              await APIs.editMessage(
+                      widget.hash, widget.message, _textController.value.text)
+                  .then((value) {
+                Navigator.of(context).pop();
+              });
+            } else {
+              Navigator.of(context).pop();
+              showSnackBarWithText(
+                  context,
+                  "Your value is either empty or you have not udpdated the message",
+                  const Duration(seconds: 3));
             }
           },
           style: ElevatedButton.styleFrom(fixedSize: buttonSize),
           icon: const Icon(Icons.add),
           label: const Text(
-            "Add",
+            "Submit",
             style: TextStyle(fontSize: 16),
           ),
         )

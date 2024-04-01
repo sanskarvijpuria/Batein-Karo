@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_emoji/flutter_emoji.dart';
 import "package:universal_html/html.dart" as html;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -6,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:crypto/crypto.dart';
+import 'package:gallery_saver_updated/gallery_saver.dart';
+import 'package:http/http.dart' as http;
 
 void showSnackBarWithText(
     BuildContext context, String text, Duration duration) {
@@ -140,7 +144,7 @@ String generateHash(String s1, String s2) {
   return generatedHash;
 }
 
-void download(
+void dowloadImageFromWeb(
   List<int> bytes, {
   String? downloadName,
 }) {
@@ -160,3 +164,48 @@ void download(
   anchor.remove();
   return;
 }
+
+Future<void> downloadImage(BuildContext context, String content) async {
+  try {
+    print("IMAGE URL ${content}");
+    if (kIsWeb) {
+      await http.get(Uri.parse(content)).then((res) {
+        dowloadImageFromWeb(res.bodyBytes,
+            downloadName: "${DateTime.now()}.jpg");
+      });
+    } else {
+      await GallerySaver.saveImage("$content.jpg", albumName: "Batein Karo")
+          .then(
+        (success) {
+          if (success != null) {
+            showSnackBarWithText(
+                context, "Image saved to Gallery", const Duration(seconds: 3));
+          }
+        },
+      );
+    }
+  } on Exception catch (err) {
+    print("Error in Saving Image , $err");
+  } finally {
+    Navigator.pop(context);
+  }
+}
+
+  bool hasOnlyEmojis(String input) {
+    // find all emojis
+    final emojis = EmojiParser().parseEmojis(input);
+
+    // return if none found
+    if (emojis.isEmpty) return false;
+
+    // remove all emojis from the input
+    for (final emoji in emojis) {
+      input = input.replaceAll(emoji, "");
+    }
+
+    // remove all whitespace (optional)
+    input = input.replaceAll(" ", "");
+
+    // return true if nothing else left
+    return input.isEmpty;
+  }
