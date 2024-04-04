@@ -9,11 +9,14 @@ class PhotoViewer extends StatefulWidget {
       required this.image,
       required this.name,
       this.message,
-      this.profileDialog = false});
+      this.profileDialog = false,
+      this.herotag =""
+      });
   final ImageProvider image;
   Message? message;
   String name;
   bool profileDialog;
+  String herotag;
 
   @override
   _PhotoViewerState createState() => _PhotoViewerState();
@@ -67,8 +70,8 @@ class _PhotoViewerState extends State<PhotoViewer> {
               MediaQuery.sizeOf(context).height * 0.8),
           backgroundDecoration:
               BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor),
-          heroAttributes: const PhotoViewHeroAttributes(
-              tag: "image_open", transitionOnUserGestures: true),
+          heroAttributes: PhotoViewHeroAttributes(
+              tag: widget.herotag, transitionOnUserGestures: true),
           loadingBuilder: (context, event) {
             return const Center(
               child: CircularProgressIndicator(),

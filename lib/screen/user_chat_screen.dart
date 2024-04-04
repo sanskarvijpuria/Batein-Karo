@@ -94,9 +94,6 @@ class _UserChatScreenState extends State<UserChatScreen> {
         });
       }
     }
-    // else {
-    //   _setupChat(widget.toUser!);
-    // }
   }
 
   void _setupChat(ChatUser toUser) {
@@ -369,31 +366,45 @@ class _UserChatScreenState extends State<UserChatScreen> {
           } else {
             if (snapshot.data!.data() != null) {
               currentStreamData = ChatUser.fromJson(snapshot.data!.data()!);
-              return Row(
-                children: [
-                  CircleAvatar(
-                    backgroundImage:
-                        CachedNetworkImageProvider(currentStreamData.userImage),
-                  ),
-                  SizedBox(
-                    width: mq.width * 0.03,
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              return InkWell(            
+                borderRadius: BorderRadius.circular(8),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          OtherUserProfileScreen(toUser: currentStreamData),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
                     children: [
-                      Text(
-                          currentStreamData.name.isEmpty
-                              ? currentStreamData.userName
-                              : currentStreamData.name,
-                          style: Theme.of(context).textTheme.titleLarge),
-                      Text(
-                          (currentStreamData.isOnline)
-                              ? "Online"
-                              : formatLastSeen(currentStreamData.lastActive!),
-                          style: Theme.of(context).textTheme.titleSmall),
+                      CircleAvatar(
+                        backgroundImage: CachedNetworkImageProvider(
+                            currentStreamData.userImage),
+                      ),
+                      SizedBox(
+                        width: mq.width * 0.03,
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                              currentStreamData.name.isEmpty
+                                  ? currentStreamData.userName
+                                  : currentStreamData.name,
+                              style: Theme.of(context).textTheme.titleLarge),
+                          Text(
+                              (currentStreamData.isOnline)
+                                  ? "Online"
+                                  : formatLastSeen(currentStreamData.lastActive!),
+                              style: Theme.of(context).textTheme.titleSmall),
+                        ],
+                      )
                     ],
-                  )
-                ],
+                  ),
+                ),
               );
             } else {
               return const Expanded(

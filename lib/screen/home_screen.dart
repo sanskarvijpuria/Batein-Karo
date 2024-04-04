@@ -120,8 +120,10 @@ class _HomeScreenState extends State<HomeScreen> {
           } else {
             Future.delayed(Duration.zero, () async {
               await APIs.updateUserOnlineStatus(currentUser!.uid, true);
-              final permissionStatus = await Permission.photos.request();
-              print(permissionStatus.toString());
+              final permissionStatusforPhotos = await Permission.photos.request();
+              // final permissionStatusForStorage = await Permission.manageExternalStorage.request();
+              print("permissionStatusforPhotos ${permissionStatusforPhotos.toString()}");
+              // print("permissionStatusForStorage ${permissionStatusForStorage.toString()}");
               final notificationSettings = await APIs.askForPermission();
               if (notificationSettings.authorizationStatus ==
                   AuthorizationStatus.authorized) {

@@ -53,12 +53,13 @@ class OtherUserProfileScreen extends StatelessWidget {
                     ? toUser.userName
                     : toUser.name,
                 profileDialog: true,
+                herotag: "profile_image_hero_tag",
               ),
             ),
           );
       },
       child: Hero(
-        tag: "image_open",
+        tag: "profile_image_hero_tag",
         transitionOnUserGestures: true,
         child: CircleAvatar(
           radius: mq.height * 0.12, // Fixed size for profile picture

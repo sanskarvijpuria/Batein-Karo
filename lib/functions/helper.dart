@@ -1,8 +1,10 @@
 import 'dart:convert';
+
+import 'package:chat_app/functions/APIS.dart';
 import 'package:chat_app/main.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_emoji/flutter_emoji.dart';
-import 'package:permission_handler/permission_handler.dart';
 import "package:universal_html/html.dart" as html;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,8 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:crypto/crypto.dart';
-import 'package:gallery_saver_updated/gallery_saver.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_storage/shared_storage.dart' as saf;
 
 void showSnackBarWithText(
     BuildContext context, String text, Duration duration) {
@@ -169,54 +171,109 @@ void dowloadImageFromWeb(
 
 Future<void> downloadImage(BuildContext context, String content) async {
   try {
-    print("IMAGE URL ${content}");
+    if (kDebugMode) {
+      print("IMAGE URL ${content}");
+    }
     if (kIsWeb) {
       await http.get(Uri.parse(content)).then((res) {
         dowloadImageFromWeb(res.bodyBytes,
             downloadName: "${DateTime.now()}.jpg");
       });
     } else {
-      if (await Permission.photos.isGranted) {
-        await GallerySaver.saveImage("$content.jpg", albumName: "Batein Karo")
-            .then(
-          (success) {
-            if (success != null) {
-              showSnackBarWithText(context, "Image saved to Gallery",
-                  const Duration(seconds: 3));
-            }
-          },
+      var response = await http.get(Uri.parse(content));
+      var responseBytes = response.bodyBytes;
+
+      const String myDirectoryName = "Batein Karo";
+      const kDownloadsFolder =
+          'content://com.android.externalstorage.documents/tree/primary%3APictures';
+      Uri kDownloadsFolderUri = Uri.parse(kDownloadsFolder);
+      folderToSaveURi = Uri.parse(
+          "content://com.android.externalstorage.documents/tree/primary%3APictures/document/primary%3APictures%2FBatein%20Karo");
+
+      persistedPermissionUris = await saf.persistedUriPermissions();
+      // print("persistedPermissionUrisOriginal $persistedPermissionUris");
+      bool isUriAllowed = await saf.isPersistedUri(kDownloadsFolderUri);
+      // print("isURIAllowed, $isUriAllowed");
+
+      if (!isUriAllowed ||
+          persistedPermissionUris == null ||
+          persistedPermissionUris!.isEmpty) {
+        // Getting permissions for the pictures folder.
+        final Uri? parentFolderUri = await saf.openDocumentTree(
+          initialUri: kDownloadsFolderUri,
+          persistablePermission: true,
+          grantWritePermission: true,
         );
+        if (parentFolderUri == null) {
+          print('User cancelled the operation.');
+          return;
+        } else {
+          print("parentFolderUri $parentFolderUri");
+        }
+
+        // Checking and upating the global Variable here.
+        persistedPermissionUris = await saf.persistedUriPermissions();
+        // print("persistedPermissionUris $persistedPermissionUris");
+        // print(
+        //     "persistedPermissionUris ${persistedPermissionUris!.first.uri.toString()}");
+        // To Create or not to create folder
+        bool? existingEntry = await saf.exists(folderToSaveURi!);
+        // print("ExistingENtry, $existingEntry");
+        if (existingEntry == null || !existingEntry) {
+          folderToSaveSaf = await saf.createDirectory(
+              Uri.parse(kDownloadsFolder), myDirectoryName);
+          // print("folderToSaveSaf ${folderToSaveSaf!.uri}");
+        }
       } else {
-        showSnackBarWithText(
-          navigatorKey.currentContext!,
-          "Please Provide Photos Permission",
-          const Duration(seconds: 3),
-        );
-        await Permission.photos.shouldShowRequestRationale;
+        // print("Else");
+        bool? existingEntry = await saf.exists(folderToSaveURi!);
+        // print("ExistingEntry Else, $existingEntry");
+        if (existingEntry == null || !existingEntry) {
+          folderToSaveSaf = await saf.createDirectory(
+              Uri.parse(kDownloadsFolder), myDirectoryName);
+          // print("folderToSaveSafCreateFolder ${folderToSaveSaf!.toMap()}");
+        }
+        folderToSaveSaf = await saf.fromTreeUri(folderToSaveURi!);
+        // print("folderToSaveSaf ${folderToSaveSaf!.toMap()}");
       }
+
+      folderToSaveSaf!
+          .createFileAsBytes(
+              mimeType: "image/png",
+              displayName: DateTime.now().microsecondsSinceEpoch.toString(),
+              bytes: responseBytes)
+          .then(
+        (documentFile) {
+          if (documentFile != null) {
+            showSnackBarWithText(
+                context, "Image saved to Gallery", const Duration(seconds: 3));
+          } else {
+            showSnackBarWithText(
+              navigatorKey.currentContext!,
+              "Unable to save picture. Please try again later.",
+              const Duration(seconds: 3),
+            );
+          }
+        },
+      );
     }
   } on Exception catch (err) {
     print("Error in Saving Image , $err");
   } finally {
-    Navigator.pop(context);
+    Navigator.pop(
+      navigatorKey.currentContext!,
+    );
   }
 }
 
 bool hasOnlyEmojis(String input) {
-  // find all emojis
   final emojis = EmojiParser().parseEmojis(input);
 
   // return if none found
   if (emojis.isEmpty) return false;
-
-  // remove all emojis from the input
   for (final emoji in emojis) {
     input = input.replaceAll(emoji, "");
   }
-
-  // remove all whitespace (optional)
   input = input.replaceAll(" ", "");
-
-  // return true if nothing else left
   return input.isEmpty;
 }

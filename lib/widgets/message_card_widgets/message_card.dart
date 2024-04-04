@@ -242,7 +242,7 @@ class _MessageCardCardState extends State<MessageCard>
 
     if (widget.message.type == "image") {
       content = Hero(
-        tag: "image_open",
+        tag: "message_card_image_hero_tag_${widget.message.messageId}",
         transitionOnUserGestures: true,
         child: CachedNetworkImage(
           imageUrl: messageContent,
@@ -293,6 +293,8 @@ class _MessageCardCardState extends State<MessageCard>
                     : widget.toUser.name.isEmpty
                         ? widget.toUser.userName
                         : widget.toUser.name,
+                herotag:
+                    "message_card_image_hero_tag_${widget.message.messageId}",
               ),
             ),
           );

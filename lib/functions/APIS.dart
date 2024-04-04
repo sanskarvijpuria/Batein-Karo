@@ -17,10 +17,14 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart' as flocalnotifcation;
+import 'package:shared_storage/shared_storage.dart' as saf;
 
 ChatUser? currentUser;
 final _firebaseMessaging = FirebaseMessaging.instance;
  final flocalnotifcation.FlutterLocalNotificationsPlugin localNotifcation = flocalnotifcation.FlutterLocalNotificationsPlugin();
+ List<saf.UriPermission>? persistedPermissionUris;
+ saf.DocumentFile? folderToSaveSaf;
+ Uri? folderToSaveURi;
 
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
   // print("Title: ${message.notification?.title}");
@@ -32,9 +36,9 @@ Future<void> handleBackgroundMessage(RemoteMessage message) async {
 }
 
 void handleMessage(RemoteMessage? message) {
-  if (message == null)
+  if (message == null) {
     return;
-  else {
+  } else {
     print("HandleMessage ${message.data}");
     navigatorKey.currentState
         ?.pushNamed("/user_chat_screen", arguments: message);
