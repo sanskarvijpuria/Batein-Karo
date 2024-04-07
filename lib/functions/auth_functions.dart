@@ -61,6 +61,12 @@ class AuthFunctions {
     });
   }
 
+  Future<void> addToUsername(String username) async {
+    await db.collection('user_names').doc(username).set({
+      'user_name': username,
+    });
+  }
+
   Future<void> saveDataToFirestore(
       String downloadURL, String enteredEmail, String enteredUsername) async {
     try {

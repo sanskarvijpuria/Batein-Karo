@@ -27,17 +27,27 @@ class SignUp extends StatelessWidget {
           keyboardType: TextInputType.text,
           textCapitalization: TextCapitalization.none,
           enableSuggestions: false,
+          onChanged: (newValue) {
+            newValue = newValue!.trim();
+            onUsernameSaved(newValue!);
+          },
           onSaved: (newValue) {
+            newValue = newValue!.trim();
             onUsernameSaved(newValue!);
           },
           validator: (newValue) {
             newValue = newValue?.trim();
-            if (newValue == null ||
-                newValue.length < 6 ||
-                isMatchingWithRegex("/^[a-zA-Z0-9._]{6,20}", newValue)) {
+            if (newValue == null || newValue.isEmpty) {
+              return "Bhaiii Please enter the username.";
+            }
+            if (newValue.contains(" ")) {
+              return "Spaces are not allowed bro.";
+            }
+            if (newValue.length < 6 ||
+                !isMatchingWithRegex("^[a-z0-9._]{6,20}", newValue)) {
               showSnackBarWithText(
                   context,
-                  "Keep it between 6 and 20 characters long. We don't want a novel for a username, just something catchy!",
+                  "Keep it between 6 and 20 characters long. We don't want a novel for a username, just something catchy!. Characters allowed are: a-z, 0-9, '.', '-'",
                   const Duration(seconds: 5));
               return "";
             }

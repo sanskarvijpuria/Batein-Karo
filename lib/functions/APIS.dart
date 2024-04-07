@@ -16,15 +16,17 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart' as flocalnotifcation;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'
+    as flocalnotifcation;
 import 'package:shared_storage/shared_storage.dart' as saf;
 
 ChatUser? currentUser;
 final _firebaseMessaging = FirebaseMessaging.instance;
- final flocalnotifcation.FlutterLocalNotificationsPlugin localNotifcation = flocalnotifcation.FlutterLocalNotificationsPlugin();
- List<saf.UriPermission>? persistedPermissionUris;
- saf.DocumentFile? folderToSaveSaf;
- Uri? folderToSaveURi;
+final flocalnotifcation.FlutterLocalNotificationsPlugin localNotifcation =
+    flocalnotifcation.FlutterLocalNotificationsPlugin();
+List<saf.UriPermission>? persistedPermissionUris;
+saf.DocumentFile? folderToSaveSaf;
+Uri? folderToSaveURi;
 
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
   // print("Title: ${message.notification?.title}");
@@ -50,7 +52,7 @@ Future initPushNotifications() async {
   await _firebaseMessaging.setForegroundNotificationPresentationOptions(
       alert: true, badge: true, sound: true);
   await _firebaseMessaging.getInitialMessage().then(handleMessage);
-  await FirebaseMessaging.onMessageOpenedApp.listen(
+  FirebaseMessaging.onMessageOpenedApp.listen(
     (RemoteMessage message) {
       print("Background Notifcation Message Tapped");
       handleMessage(message);
@@ -114,7 +116,8 @@ class APIs {
     if (data.isEmpty) {
       return null;
     } else {
-      return ChatUser.fromJson(data);
+      currentUser = ChatUser.fromJson(data);
+      return currentUser;
     }
   }
 
@@ -138,6 +141,17 @@ class APIs {
         .doc(uid)
         .update({'is_online': isOnline, 'last_active': Timestamp.now()});
     print("Done");
+  }
+
+  static Future<bool> checkUsernameExists(String username) async {
+    var data = await db.collection("user_name").doc(username).get();
+    if (!data.exists) {
+      print("Username Does Not exist");
+      return false;
+    }
+
+    print("Username Does exist");
+    return true;
   }
 
   // ****************** Cloud Storage upload Profile Pic and Chat Images *********************
@@ -169,6 +183,11 @@ class APIs {
     var snapshot =
         db.collection("recent_chats").doc(currentUserUid).snapshots();
     return snapshot;
+  }
+
+  static Future<DocumentSnapshot<Map<String, dynamic>>>
+      getAllRecentUsersForExport(String currentUserUid) {
+    return db.collection("recent_chats").doc(currentUserUid).get();
   }
 
   static Future<void> updateRecentMessage(
@@ -219,10 +238,23 @@ class APIs {
 
 // ****************** Add Users in Recent Chat *********************
 
-  static Future<List<dynamic>> checkUserExist(String email) async {
-    final data =
-        await db.collection('users').where("email", isEqualTo: email).get();
-    if (data.docs.isEmpty || email == currentUser!.email) {
+  static Future<List<dynamic>> checkUserExist(String enteredString,
+      {bool isEmail = true}) async {
+    QuerySnapshot<Map<String, dynamic>> data;
+    if (isEmail) {
+      data = await db
+          .collection('users')
+          .where("email", isEqualTo: enteredString)
+          .get();
+    } else {
+      data = await db
+          .collection('users')
+          .where("user_name", isEqualTo: enteredString)
+          .get();
+    }
+    if (data.docs.isEmpty ||
+        enteredString == currentUser!.email ||
+        enteredString == currentUser!.userName) {
       return [false];
     } else {
       final ChatUser toUser =
@@ -258,6 +290,17 @@ class APIs {
         .collection("messages")
         .orderBy("sent_at", descending: true)
         .snapshots();
+    return data;
+  }
+
+  static Future<QuerySnapshot<Map<String, dynamic>>>
+      getAllMessagesBetweenUsersForExport(String hash) {
+    Future<QuerySnapshot<Map<String, dynamic>>> data = db
+        .collection("chats")
+        .doc(hash.toString())
+        .collection("messages")
+        .orderBy("sent_at", descending: false)
+        .get();
     return data;
   }
 
@@ -298,17 +341,9 @@ class APIs {
   }
 
   static Future<void> deleteMessage(String hash, Message message) async {
-    // The below code is completely optional. We are saving the deleted message in the different folder.
-    // TODO: Remove this in future. Also correct the image code accoridngly.
 
     Map<String, dynamic> deletedMessage = message.toJson();
     deletedMessage["deleted_time"] = Timestamp.now();
-    await db
-        .collection("deletedChats")
-        .doc(hash.toString())
-        .collection("messages")
-        .doc(message.messageId)
-        .set(deletedMessage);
 
     await db
         .collection('chats')
@@ -317,26 +352,16 @@ class APIs {
         .doc(message.messageId)
         .delete();
 
-    // TODO: Undo in future commits.
-    // if (message.type == "image") {
-    //   await APIs.storageRef.refFromURL(message.content).delete();
-    // }
+    if (message.type == "image") {
+      await APIs.storageRef.refFromURL(message.content).delete();
+    }
   }
 
   static Future<void> editMessage(
       String hash, Message message, String newMessageText) async {
     // The below code is completely optional. We are saving the deleted message in the different folder.
-    // TODO: Remove this in future. Also correct the image code accoridngly.
 
-    Map<String, dynamic> editMessage = message.toJson();
-    editMessage["edited_at"] = Timestamp.now();
-    await db
-        .collection("EditedChats")
-        .doc(hash.toString())
-        .collection("messages")
-        .doc(message.messageId)
-        .set(editMessage);
-
+ 
     await db
         .collection('chats')
         .doc(hash)

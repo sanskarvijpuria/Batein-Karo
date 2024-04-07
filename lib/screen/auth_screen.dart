@@ -1,3 +1,5 @@
+import 'package:chat_app/functions/APIS.dart';
+import 'package:chat_app/main.dart';
 import 'package:flutter/material.dart';
 
 import 'package:image_picker/image_picker.dart';
@@ -48,6 +50,18 @@ class _AuthScreenState extends State<AuthScreen> {
     }
 
     if (isValid) {
+      if (!_isLogin) {
+        bool isUsernameExists =
+            await APIs.checkUsernameExists(_enteredUsername);
+        if (isUsernameExists) {
+          showSnackBarWithText(
+            navigatorKey.currentContext!,
+            "Username already taken. Please try with different username",
+            const Duration(seconds: 3),
+          );
+          return;
+        }
+      }
       _formKey.currentState!.save();
       setState(() {
         _isAuthenticating = !_isAuthenticating;
@@ -61,6 +75,7 @@ class _AuthScreenState extends State<AuthScreen> {
           await authFunctions.saveDataToFirestore(
               downloadURL, _enteredEmail, _enteredUsername);
           await authFunctions.createRecentMessage();
+          await authFunctions.addToUsername(_enteredUsername);
         }
       } on Exception {
         setState(() {

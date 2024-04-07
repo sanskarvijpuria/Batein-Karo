@@ -10,10 +10,13 @@ import 'package:flutter/material.dart';
 class AddUserDialog extends StatelessWidget {
   const AddUserDialog({super.key, required this.alreadyConnectedUser});
   final List<ChatUser> alreadyConnectedUser;
-  Future<bool> _checkUserIfAlreadyExists(String email) {
+  Future<bool> _checkUserIfAlreadyExists(String enteredString,
+      {isEmail = true}) {
     // Check if email exists in alreadyConnectedUser list
     for (ChatUser user in alreadyConnectedUser) {
-      if (email == user.email) {
+      if (isEmail && enteredString == user.email) {
+        return Future.value(true); // User already exists
+      } else if (enteredString == user.userName) {
         return Future.value(true); // User already exists
       }
     }
@@ -22,7 +25,7 @@ class AddUserDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String email = '';
+    String enteredString = '';
     Size mq = MediaQuery.of(context).size;
     final double buttonHeight = mq.height * 0.05;
     final double buttonWidth = mq.width * 0.35;
@@ -49,11 +52,13 @@ class AddUserDialog extends StatelessWidget {
         width: 300,
         child: TextField(
           maxLines: null,
-          onChanged: (value) => email = value.trim(),
+          onChanged: (value) => enteredString = value.trim(),
           decoration: InputDecoration(
-            hintText: 'Email Id',
+            label: const Text("Enter Username/ Email"),
+            hintText: 'Add a friend(if you have one)',
+            hintMaxLines: 2,
             prefixIcon: const Icon(
-              Icons.email,
+              Icons.account_circle,
               color: Colors.blue,
             ),
             border: OutlineInputBorder(
@@ -81,18 +86,31 @@ class AddUserDialog extends StatelessWidget {
         ElevatedButton.icon(
           onPressed: () async {
             Navigator.pop(context);
-            if (email.isNotEmpty) {
-              bool userExists = await _checkUserIfAlreadyExists(email);
+            bool isEmailEntered = isEmailValid(enteredString);
+            if (enteredString.isNotEmpty) {
+              if (enteredString == currentUser!.email ||
+                  enteredString == currentUser!.userName) {
+                showSnackBarWithText(
+                  navigatorKey.currentContext!,
+                  "We get it, you're awesome. But maybe chat with someone else and spread the awesomeness around?",
+                  const Duration(seconds: 5),
+                );
+                return;
+              }
+              bool userExists = await _checkUserIfAlreadyExists(enteredString,
+                  isEmail: isEmailEntered);
+
               if (userExists) {
                 // User already exists, show snackbar
                 showSnackBarWithText(
                   navigatorKey.currentContext!,
-                  'User already exists!',
+                  "Why not try adding someone new? There's a whole world out there!",
                   const Duration(seconds: 3),
                 );
               } else {
                 // Check user existence on server
-                final result = await APIs.checkUserExist(email);
+                final result = await APIs.checkUserExist(enteredString,
+                    isEmail: isEmailEntered);
 
                 if (!result[0]) {
                   showSnackBarWithText(

@@ -11,7 +11,6 @@ import 'package:chat_app/widgets/message_card_widgets/message_card.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:image_picker/image_picker.dart';
@@ -127,7 +126,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
         await APIs.markMessageRead(hash, message.messageId);
         message.seen = true;
         if (message == messages.reversed.last) {
-          APIs.updateRecentMessageforBothUsers(currentUser!.uid,
+          await APIs.updateRecentMessageforBothUsers(currentUser!.uid,
               widget.toUser!.uid, messageToLastMessage(message));
         }
       }
@@ -366,7 +365,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
           } else {
             if (snapshot.data!.data() != null) {
               currentStreamData = ChatUser.fromJson(snapshot.data!.data()!);
-              return InkWell(            
+              return InkWell(
                 borderRadius: BorderRadius.circular(8),
                 onTap: () {
                   Navigator.of(context).push(
@@ -398,7 +397,8 @@ class _UserChatScreenState extends State<UserChatScreen> {
                           Text(
                               (currentStreamData.isOnline)
                                   ? "Online"
-                                  : formatLastSeen(currentStreamData.lastActive!),
+                                  : formatLastSeen(
+                                      currentStreamData.lastActive!),
                               style: Theme.of(context).textTheme.titleSmall),
                         ],
                       )
@@ -416,19 +416,6 @@ class _UserChatScreenState extends State<UserChatScreen> {
           }
         },
       ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 15),
-          child: IconButton(
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) =>
-                      OtherUserProfileScreen(toUser: currentStreamData)));
-            },
-            icon: const Icon(CupertinoIcons.info_circle_fill),
-          ),
-        ),
-      ],
     );
   }
 

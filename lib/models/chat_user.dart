@@ -1,18 +1,18 @@
 import 'package:chat_app/functions/helper.dart';
 
 class ChatUser {
-  ChatUser({
-    required this.uid,
-    required this.userImage,
-    required this.userName,
-    required this.email,
-    required this.name,
-    required this.about,
-    required this.createdAt,
-    required this.isOnline,
-    required this.lastActive,
-    required this.pushToken,
-  });
+  ChatUser(
+      {required this.uid,
+      required this.userImage,
+      required this.userName,
+      required this.email,
+      required this.name,
+      required this.about,
+      required this.createdAt,
+      required this.isOnline,
+      required this.lastActive,
+      required this.pushToken,
+      this.exportedDataAt});
   late final String uid;
   late final String userImage;
   late final String userName;
@@ -23,6 +23,7 @@ class ChatUser {
   late final bool isOnline;
   late final DateTime? lastActive;
   late final String pushToken;
+  DateTime? exportedDataAt;
 
   ChatUser.fromJson(Map<String, dynamic> json) {
     uid = json['uid'];
@@ -39,6 +40,9 @@ class ChatUser {
         ? null
         : convertTimestamptoDatetime(json['last_active']);
     pushToken = json['push_token'] ?? '';
+    exportedDataAt = json['exported_data_at'] == null
+        ? null
+        : convertTimestamptoDatetime(json['exported_data_at']);
   }
 
   Map<String, dynamic> toJson() {
@@ -53,6 +57,7 @@ class ChatUser {
     data['is_online'] = isOnline;
     data['last_active'] = lastActive;
     data['push_token'] = pushToken;
+    if (exportedDataAt != null) data['exported_data_at'] = exportedDataAt;
     return data;
   }
 }

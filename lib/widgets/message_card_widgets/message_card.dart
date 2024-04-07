@@ -4,7 +4,7 @@ import 'package:chat_app/models/chat_user.dart';
 import 'package:chat_app/models/messages.dart';
 import 'package:chat_app/widgets/message_card_widgets/edit_message_dialog.dart';
 import 'package:chat_app/widgets/message_card_widgets/option_items.dart';
-import 'package:chat_app/widgets/photo_viewer.dart';
+import 'package:chat_app/widgets/general_widgets/photo_viewer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -178,7 +178,7 @@ class _MessageCardCardState extends State<MessageCard>
   void checkEmojis(String content) {
     var parser = EmojiParser();
     String unemojify = parser.unemojify(content);
-    print("Emoji Code and types: $unemojify");
+    // print("Emoji Code and types: $unemojify");
     int length = content.length;
     if (hasOnlyEmojis(content)) {
       if (length == 2) {

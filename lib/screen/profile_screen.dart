@@ -4,7 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_app/functions/APIS.dart';
 import 'package:chat_app/functions/helper.dart';
 import 'package:chat_app/models/chat_user.dart';
-import 'package:chat_app/widgets/photo_viewer.dart';
+import 'package:chat_app/widgets/general_widgets/kebab_menu.dart';
+import 'package:chat_app/widgets/general_widgets/photo_viewer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -165,6 +166,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   elevation: 15,
                   centerTitle: true,
                   title: const Text('Your Glorious Profile'),
+                  actions: kIsWeb
+                      ? null
+                      : [
+                          KebabMenu(
+                            isExport: true,
+                          )
+                        ],
                 ),
                 body: SingleChildScrollView(
                   child: Form(
@@ -200,6 +208,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     label: const Text('Save My Awesomeness'),
                                     icon: const Icon(Icons.edit),
                                   ),
+                            SizedBox(height: mq.height * 0.025),
+                            _buildJoinedOn(context, snapshot)
                           ],
                         ),
                       ),
@@ -216,17 +226,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Stack(
       children: [
         GestureDetector(
-          onTap: (){
-               Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PhotoViewer(
-                image: CachedNetworkImageProvider(snapshot.data.userImage),
-                name: "Profile Photo",
-                profileDialog: true,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PhotoViewer(
+                  image: CachedNetworkImageProvider(snapshot.data.userImage),
+                  name: "Profile Photo",
+                  profileDialog: true,
+                ),
               ),
-            ),
-          );
+            );
           },
           child: CircleAvatar(
             radius: mq.height * 0.12,
@@ -308,11 +318,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
       },
       validator: (newValue) {
         newValue = newValue?.trim();
-        if (newValue == null ||
-            isMatchingWithRegex("/^[a-zA-Z0-9._]{6,20}", newValue)) {
+        if (newValue == null || newValue.isEmpty) {
+          return "Bhaiii Please enter the username.";
+        }
+        if (newValue.contains(" ")) {
+          return "Spaces are not allowed bro.";
+        }
+        if (newValue.length < 6 ||
+            !isMatchingWithRegex("^[a-z0-9._]{6,20}", newValue)) {
           showSnackBarWithText(
             context,
-            "Keep it between 6 and 20 characters long. We don't want a novel for a username, just something catchy!",
+            "Keep it between 6 and 20 characters long. We don't want a novel for a username, just something catchy!. Characters allowed are: a-z, 0-9, '.', '-'",
             const Duration(seconds: 5),
           );
         }
@@ -376,6 +392,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
         isDisabledField: true,
       ),
       style: TextStyle(color: Colors.grey.shade600),
+    );
+  }
+
+  Widget _buildJoinedOn(BuildContext context, AsyncSnapshot snapshot) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          'Joined On: ',
+          style: TextStyle(
+              color: Theme.of(context).colorScheme.onBackground,
+              fontWeight: FontWeight.w500,
+              fontSize: 15),
+        ),
+        Text(
+          formatJoinedDate(snapshot.data.createdAt!),
+          style: TextStyle(
+              color:
+                  Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+              fontSize: 15),
+        ),
+      ],
     );
   }
 

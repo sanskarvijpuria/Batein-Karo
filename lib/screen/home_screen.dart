@@ -1,11 +1,12 @@
 import 'package:chat_app/functions/APIS.dart';
+import 'package:chat_app/functions/helper.dart';
 import 'package:chat_app/models/chat_user.dart';
 import 'package:chat_app/widgets/home_screen_widgets/add_user_dialog.dart';
-import 'package:chat_app/widgets/home_screen_widgets/kebab_menu.dart';
+import 'package:chat_app/widgets/general_widgets/kebab_menu.dart';
 import 'package:chat_app/widgets/home_screen_widgets/home_screen_recent_user_list.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -34,30 +35,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
     SystemChannels.lifecycle.setMessageHandler((message) async {
       print('System Message: ${message.toString()}');
-
       if (currentUser != null && message != null) {
         if (message.toString().toLowerCase().contains("resume")) {
+          await APIs.db.enableNetwork();
           await APIs.updateUserOnlineStatus(currentUser!.uid, true);
         } else if (message.toLowerCase().contains("pause")) {
           await APIs.updateUserOnlineStatus(currentUser!.uid, false);
+          await APIs.db.disableNetwork();
         } else if (message.toLowerCase().contains("detached")) {
           await APIs.updateUserOnlineStatus(currentUser!.uid, false);
+          await APIs.db.disableNetwork();
         }
       }
       return Future.value(message);
     });
-  }
-
-  List<dynamic> sortUsersByLastMessageTime(List<dynamic> listOfDict) {
-    // print("Listof dict $listOfDict");
-    // Sorts the list of dictionaries by the 'time' value of the inner dictionary and returns the sorted list.
-    listOfDict.sort((a, b) {
-      final timeA = a.values.first["time"] as Timestamp;
-      final timeB = b.values.first["time"] as Timestamp;
-      return timeB.compareTo(timeA);
-    });
-    // print("SortedListOfLastMessage: $listOfDict");
-    return listOfDict;
   }
 
   void _recentChatUserData(List<dynamic> recentChatUserData) {
@@ -120,9 +111,15 @@ class _HomeScreenState extends State<HomeScreen> {
           } else {
             Future.delayed(Duration.zero, () async {
               await APIs.updateUserOnlineStatus(currentUser!.uid, true);
-              final permissionStatusforPhotos = await Permission.photos.request();
+              final permissionStatusforPhotos =
+                  await Permission.photos.request();
+              final permissionStatusforMediaLocation =
+                  await Permission.mediaLibrary.request();
               // final permissionStatusForStorage = await Permission.manageExternalStorage.request();
-              print("permissionStatusforPhotos ${permissionStatusforPhotos.toString()}");
+              print(
+                  "permissionStatusforPhotos ${permissionStatusforPhotos.toString()}");
+              print(
+                  "permissionStatusforMediaLocation ${permissionStatusforMediaLocation.toString()}");
               // print("permissionStatusForStorage ${permissionStatusForStorage.toString()}");
               final notificationSettings = await APIs.askForPermission();
               if (notificationSettings.authorizationStatus ==
@@ -199,7 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   //       ? CupertinoIcons.clear_circled_solid
                   //       : Icons.search),
                   // ),
-                  const KebabMenu(),
+                  KebabMenu(),
                 ],
               ),
               floatingActionButton: Padding(
@@ -221,7 +218,8 @@ class _HomeScreenState extends State<HomeScreen> {
               body: StreamBuilder(
                 stream: APIs.getAllRecentUsers(currentUser!.uid),
                 builder: (context, snapshot) {
-                  localNotifcation.cancelAll();
+                  if (!kIsWeb) localNotifcation.cancelAll();
+                  // if (!kIsWeb) exportData();
                   if (snapshot.connectionState == ConnectionState.waiting ||
                       snapshot.connectionState == ConnectionState.none) {
                     return const Center(
