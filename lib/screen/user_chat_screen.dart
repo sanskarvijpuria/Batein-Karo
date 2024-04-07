@@ -376,7 +376,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
                   );
                 },
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.only(right: 8.0, left: 8.0),
                   child: Row(
                     children: [
                       CircleAvatar(

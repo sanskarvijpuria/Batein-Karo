@@ -316,6 +316,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       onTapOutside: (_) {
         FocusManager.instance.primaryFocus?.unfocus();
       },
+      maxLength: 20,
       validator: (newValue) {
         newValue = newValue?.trim();
         if (newValue == null || newValue.isEmpty) {

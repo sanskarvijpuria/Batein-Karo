@@ -26,6 +26,7 @@ class SignUp extends StatelessWidget {
           autocorrect: false,
           keyboardType: TextInputType.text,
           textCapitalization: TextCapitalization.none,
+          maxLength: 20,
           enableSuggestions: false,
           onChanged: (newValue) {
             newValue = newValue!.trim();

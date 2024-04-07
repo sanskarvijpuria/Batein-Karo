@@ -254,6 +254,32 @@ Future<void> saveImageUsingSAF(Uint8List responseBytes) async {
   );
 }
 
+Future<void> saveImageUsingMediaStore(Uint8List responseBytes) async {
+  Directory directory = await getApplicationSupportDirectory();
+  String filename = "${DateTime.now().millisecondsSinceEpoch}.png";
+  File tempFile = File("${directory.path}/$filename");
+  MediaStore.appFolder = "Batein Karo";
+  tempFile.writeAsBytes(responseBytes);
+  print("MediaStore Folder ${MediaStore.appFolder}");
+  final bool status = await MediaStore().saveFile(
+      tempFilePath: tempFile.path,
+      dirType: DirType.photo,
+      dirName: DirType.photo.defaults);
+  print("Status of Export: $status");
+  if (status) {
+    showSnackBarWithText(
+        navigatorKey.currentContext!,
+        "File transfer complete! Image acquired in the designated photo directory.(Pictures Folder)",
+        const Duration(seconds: 3));
+  } else {
+    showSnackBarWithText(
+      navigatorKey.currentContext!,
+      "Unable to save picture. Please try again later.",
+      const Duration(seconds: 3),
+    );
+  }
+}
+
 Future<void> downloadImage(BuildContext context, String content) async {
   try {
     if (kDebugMode) {
@@ -267,60 +293,11 @@ Future<void> downloadImage(BuildContext context, String content) async {
     } else {
       var responseBytes = await getResponseBytesFromUri(content);
 
-      print(await getApplicationDocumentsDirectory());
-
-      Directory directory = await getApplicationSupportDirectory();
-      String filename = "${DateTime.now().millisecondsSinceEpoch}.png";
-      File tempFile = File("${directory.path}/$filename");
-      // print(await getApplicationSupportDirectory());
-      // print(await getExternalStorageDirectories());
-      // print(await getExternalStorageDirectory()
-      //     .then((value) => print(value!.path)));
-
-      // print(await Platform.environment.values);
-      // print(await getTemporaryDirectory());
-      // print(await getApplicationSupportDirectory());
-      // var exDir =
-      //     await getExternalStorageDirectories(type: StorageDirectory.dcim);
-      // print(exDir);
-      // Directory(
-      //         "/storage/emulated/0/Android/data/com.example.chat_app/files/dcim/")
-      //     .create(recursive: true);
-      MediaStore.appFolder = "Batein Karo";
-      tempFile.writeAsBytes(responseBytes);
-      print("MediaStore Folder ${MediaStore.appFolder}");
-      final bool status = await MediaStore().saveFile(
-          tempFilePath: tempFile.path,
-          dirType: DirType.photo,
-          dirName: DirType.photo.defaults);
-      print("Status of Export: $status");
-      if (status) {
-        showSnackBarWithText(
-            navigatorKey.currentContext!,
-            "File transfer complete! Image acquired in the designated photo directory.(Pictures Folder)",
-            const Duration(seconds: 3));
-      } else {
-        showSnackBarWithText(
-          navigatorKey.currentContext!,
-          "Unable to save picture. Please try again later.",
-          const Duration(seconds: 3),
-        );
+      try {
+        saveImageUsingSAF(responseBytes);
+      } catch (err) {
+        saveImageUsingMediaStore(responseBytes);
       }
-
-      // var mediastore = await saf
-      //     .getMediaStoreContentDirectory(saf.MediaStoreCollection.images);
-
-      // var mediastr = mediastore?.path;
-      // // print(mediastr);
-      //       await File("/external/images/media/sampleee.png").writeAsBytes(responseBytes);
-      // print(await saf.writeToFileAsBytes(mediastore!, bytes: responseBytes));
-      //   MediaStore.appFolder = "Batein Karo";
-      //   print("MediaStore Folder ${MediaStore.appFolder}");
-      //   print(await MediaStore().saveFile(
-      //       tempFilePath:
-      //           "/storage/emulated/0/Android/data/com.example.chat_app/files/sampleee.png",
-      //       dirType: DirType.photo,
-      //       dirName: DirType.photo.defaults));
     }
   } on Exception catch (err) {
     print("Error in Saving Image , $err");

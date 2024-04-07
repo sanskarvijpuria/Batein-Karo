@@ -56,6 +56,7 @@ class AddUserDialog extends StatelessWidget {
           decoration: InputDecoration(
             label: const Text("Enter Username/ Email"),
             hintText: 'Add a friend(if you have one)',
+            hintStyle: const TextStyle(fontSize: 14),
             hintMaxLines: 2,
             prefixIcon: const Icon(
               Icons.account_circle,

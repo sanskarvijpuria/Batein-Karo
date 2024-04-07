@@ -10,6 +10,7 @@ import 'package:chat_app/models/messages.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:flutter/foundation.dart';
+import 'package:media_store_plus/media_store_plus.dart';
 
 import 'package:path_provider/path_provider.dart';
 
@@ -123,6 +124,17 @@ void zipFiles(String sourcePath) {
   // encoder.close();
 }
 
+Future<void> deleteTempExportData(
+    String exportPath, String zipFilePath, Directory tempDir) async {
+  Directory export = Directory(exportPath);
+  if (export.existsSync()) {
+    Directory(exportPath).deleteSync(recursive: true);
+  }
+
+  if (File(zipFilePath).existsSync()) {
+    File("${tempDir.absolute.path}/export.zip").deleteSync(recursive: true);
+  }
+}
 
 Future<bool> exportData() async {
   final Map<String, dynamic> result = {};
@@ -130,19 +142,13 @@ Future<bool> exportData() async {
   final List<Map<String, dynamic>> resultMessages = [];
 
   try {
+    MediaStore.appFolder = "Batein Karo";
     final Directory? tempDir = await getExternalStorageDirectory();
     // Removing Existing Directory is exist
 
     String exportPath = "${tempDir!.absolute.path}/export/";
-    Directory export = Directory(exportPath);
-    if (export.existsSync()) {
-      Directory(exportPath).deleteSync(recursive: true);
-    }
-
     String zipFilePath = "${tempDir.absolute.path}/export.zip";
-    if (File(zipFilePath).existsSync()) {
-      File("${tempDir.absolute.path}/export.zip").deleteSync(recursive: true);
-    }
+
     userData = await getFormattedUserDataForExport();
     print("Export $userData");
 
@@ -186,15 +192,26 @@ Future<bool> exportData() async {
     await saveFileFromWebToExternalDirectory("export/data", "export_data.txt",
         isWebContent: false, stringData: jsonString);
     zipFiles(exportPath);
+
+    print("MediaStore Folder ${MediaStore.appFolder}");
+    final bool status = await MediaStore().saveFile(
+        tempFilePath: zipFilePath,
+        dirType: DirType.download,
+        dirName: DirType.download.defaults);
+    print("Status of Export: $status");
+
+    await deleteTempExportData(exportPath, zipFilePath, tempDir);
+
     await APIs.updateUserData(
             {"exported_data_at": Timestamp.now()}, currentUser!.uid)
         .then((value) async {
       await APIs.getSelfData();
       showSnackBarWithText(
           navigatorKey.currentContext!,
-          "Data has been successfully exported. Please check in the directory: $exportPath ",
+          "Data has been successfully exported. Please check in the directory: ${DirType.download.defaults} ",
           const Duration(seconds: 8));
     });
+    
     return true;
   } on Exception catch (err, stacktrace) {
     // TODO

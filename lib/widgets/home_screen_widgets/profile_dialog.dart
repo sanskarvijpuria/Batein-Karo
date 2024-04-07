@@ -13,16 +13,15 @@ class ProfileDialog extends StatelessWidget {
     Size mq = MediaQuery.of(context).size;
     return AlertDialog.adaptive(
       title: Text(
-        toUser.name,
+       toUser.name.isEmpty ? toUser.userName : toUser.name,
         textAlign: TextAlign.center,
       ),
       titleTextStyle: TextStyle(
           fontWeight: FontWeight.w600,
-          fontSize: 30,
+          fontSize: 25,
           color: Theme.of(context).colorScheme.onBackground),
       contentPadding: EdgeInsets.only(
           top: mq.height * 0.015, right: 20, left: 20, bottom: 10),
-
       content: Stack(
         children: [
           CachedNetworkImage(

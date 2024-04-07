@@ -94,8 +94,8 @@ class ExportDataDialog extends StatelessWidget {
       content: SizedBox(
         width: 300,
         height: (currentUser.exportedDataAt == null)
-            ? mq.height * 0.09
-            : mq.height * 0.15,
+            ? mq.height * 0.13
+            : mq.height * 0.20,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -106,19 +106,21 @@ class ExportDataDialog extends StatelessWidget {
             const SizedBox(
               height: 5,
             ),
-            RichText(
-              text: const TextSpan(
-                children: [
-                  TextSpan(
-                    text: "Please note: ",
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                  ),
-                  TextSpan(
-                    text:
-                        "You will not be able to export data for the next 48 hours.",
-                    style: TextStyle(fontSize: 16.0, color: Colors.grey),
-                  ),
-                ],
+            Expanded(
+              child: RichText(
+                text: const TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "Please note: ",
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                    ),
+                    TextSpan(
+                      text:
+                          "You will not be able to export data for the next 48 hours.",
+                      style: TextStyle(fontSize: 16.0, color: Colors.grey),
+                    ),
+                  ],
+                ),
               ),
             ),
             if (currentUser.exportedDataAt != null)
@@ -126,10 +128,12 @@ class ExportDataDialog extends StatelessWidget {
                 height: 8,
               ),
             if (currentUser.exportedDataAt != null)
-              Text(
-                "Your last export date and time is ${formatJoinedDate(currentUser.createdAt!)}",
-                softWrap: true,
-                style: const TextStyle(fontSize: 16.0, color: Colors.grey),
+              Expanded(
+                child: Text(
+                  "Your last export date and time is ${formatJoinedDate(currentUser.createdAt!)}",
+                  softWrap: true,
+                  style: const TextStyle(fontSize: 14.0, color: Colors.grey),
+                ),
               ),
           ],
         ),
@@ -137,7 +141,7 @@ class ExportDataDialog extends StatelessWidget {
       actionsOverflowDirection: VerticalDirection.up,
       actionsAlignment: MainAxisAlignment.spaceEvenly,
       actionsOverflowButtonSpacing: 8,
-      actionsPadding: const EdgeInsets.all(8),
+      actionsPadding: const EdgeInsets.only(top: 8, right: 8, left: 8, bottom: 8),
       actions: [
         TextButton(
           onPressed: () {
