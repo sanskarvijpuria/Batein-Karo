@@ -17,10 +17,10 @@ class ProfileScreen extends StatefulWidget {
   final ChatUser currentUser;
 
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  ProfileScreenState createState() => ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class ProfileScreenState extends State<ProfileScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late Size mq;
   Map<String, dynamic> userData = {};

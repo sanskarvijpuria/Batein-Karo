@@ -2,6 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io' as io;
 import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+
 import 'package:chat_app/functions/access_firebase_token.dart';
 import 'package:chat_app/functions/helper.dart';
 import 'package:chat_app/main.dart';
@@ -9,15 +12,15 @@ import 'package:chat_app/models/chat_messages.dart';
 import 'package:chat_app/models/chat_user.dart';
 import 'package:chat_app/models/messages.dart';
 import 'package:chat_app/models/recent_chats.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'
+    as flocalnotifcation;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart'
-    as flocalnotifcation;
 import 'package:shared_storage/shared_storage.dart' as saf;
 
 ChatUser? currentUser;
@@ -93,8 +96,6 @@ class APIs {
   }
 
   static Future<ChatUser?> getSelfData() async {
-    // Map<String, dynamic> data =
-    //     await getParticularUserData(auth.currentUser!.uid);
     Map<String, dynamic> data = {};
     for (int count = 0; count < 3; count++) {
       print("Auth Data ${auth.currentUser!.uid}");
@@ -104,7 +105,6 @@ class APIs {
           return await getParticularUserData(auth.currentUser!.uid);
         },
       );
-      // data = await getParticularUserData(auth.currentUser!.uid);
       print("Auth Data $data");
       if (data.isEmpty) {
         continue;
@@ -318,7 +318,7 @@ class APIs {
   }
 
   static Future<void> markMessageRead(String hash, String messageId) async {
-    final docRef = db
+    db
         .collection('chats')
         .doc(hash)
         .collection('messages')

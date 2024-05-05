@@ -31,10 +31,10 @@ Future<void> saveFileFromWebToExternalDirectory(String path, String filename,
 
   // finally saving it
   if (isWebContent) {
-    await File('${tempDir!.path}/$path/$filename')
+    await File('${tempDir.path}/$path/$filename')
         .writeAsBytes(userResponseData);
   } else {
-    await File('${tempDir!.path}/$path/$filename').writeAsString(stringData);
+    await File('${tempDir.path}/$path/$filename').writeAsString(stringData);
   }
 }
 

@@ -19,10 +19,10 @@ class PhotoViewer extends StatefulWidget {
   String herotag;
 
   @override
-  _PhotoViewerState createState() => _PhotoViewerState();
+  PhotoViewerState createState() => PhotoViewerState();
 }
 
-class _PhotoViewerState extends State<PhotoViewer> {
+class PhotoViewerState extends State<PhotoViewer> {
   bool _isShowAppBar = true;
 
   @override

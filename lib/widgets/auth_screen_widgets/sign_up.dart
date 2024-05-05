@@ -29,12 +29,12 @@ class SignUp extends StatelessWidget {
           maxLength: 20,
           enableSuggestions: false,
           onChanged: (newValue) {
-            newValue = newValue!.trim();
-            onUsernameSaved(newValue!);
+            newValue = newValue.trim();
+            onUsernameSaved(newValue);
           },
           onSaved: (newValue) {
             newValue = newValue!.trim();
-            onUsernameSaved(newValue!);
+            onUsernameSaved(newValue);
           },
           validator: (newValue) {
             newValue = newValue?.trim();

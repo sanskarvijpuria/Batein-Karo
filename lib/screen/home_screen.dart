@@ -15,16 +15,16 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() => HomeScreenState();
 
-  static _HomeScreenState of(BuildContext context) =>
-      context.findAncestorStateOfType<_HomeScreenState>()!;
+  static HomeScreenState of(BuildContext context) =>
+      context.findAncestorStateOfType<HomeScreenState>()!;
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class HomeScreenState extends State<HomeScreen> {
   bool isLoading = false, isError = false; // Flag for loading state
   List<String> recentChatsUid = [];
-  bool _isSearching = false;
+  final bool _isSearching = false;
   final List<List<dynamic>> _searchList = [];
   List<dynamic> sortedRecentUserList = [];
   List<ChatUser> sortedListOfChatUsers = [];

@@ -24,13 +24,13 @@ class UserChatScreen extends StatefulWidget {
   // static const route = "/notification-screen";
 
   @override
-  _UserChatScreenState createState() => _UserChatScreenState();
+  UserChatScreenState createState() => UserChatScreenState();
 
-  static _UserChatScreenState of(BuildContext context) =>
-      context.findAncestorStateOfType<_UserChatScreenState>()!;
+  static UserChatScreenState of(BuildContext context) =>
+      context.findAncestorStateOfType<UserChatScreenState>()!;
 }
 
-class _UserChatScreenState extends State<UserChatScreen> {
+class UserChatScreenState extends State<UserChatScreen> {
   final TextEditingController _textController = TextEditingController();
   late Stream<QuerySnapshot<Map<String, dynamic>>> _myStream;
   late Stream<DocumentSnapshot<Map<String, dynamic>>> _appBarStream;

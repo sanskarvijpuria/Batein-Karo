@@ -442,6 +442,7 @@ class _MessageCardCardState extends State<MessageCard>
     );
   }
 
+  @override
   Widget build(BuildContext context) {
     final bool isSender = widget.message.senderId == currentUser!.uid;
     final ColorScheme colorScheme = Theme.of(context).colorScheme;

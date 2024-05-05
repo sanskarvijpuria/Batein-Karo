@@ -1,19 +1,21 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
 import 'package:chat_app/functions/APIS.dart';
 import 'package:chat_app/main.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter_emoji/flutter_emoji.dart';
-import 'package:path_provider/path_provider.dart';
-import "package:universal_html/html.dart" as html;
-import 'package:media_store_plus/media_store_plus.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
+import 'package:crypto/crypto.dart';
+import 'package:flutter_emoji/flutter_emoji.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:crypto/crypto.dart';
-import 'package:http/http.dart' as http;
+import 'package:media_store_plus/media_store_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import "package:universal_html/html.dart" as html;
 import 'package:shared_storage/shared_storage.dart' as saf;
 
 void showSnackBarWithText(
@@ -283,7 +285,7 @@ Future<void> saveImageUsingMediaStore(Uint8List responseBytes) async {
 Future<void> downloadImage(BuildContext context, String content) async {
   try {
     if (kDebugMode) {
-      print("IMAGE URL ${content}");
+      print("IMAGE URL $content");
     }
     if (kIsWeb) {
       await http.get(Uri.parse(content)).then((res) {

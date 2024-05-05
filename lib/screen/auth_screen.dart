@@ -12,10 +12,10 @@ class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
 
   @override
-  State<AuthScreen> createState() => _AuthScreenState();
+  State<AuthScreen> createState() => AuthScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> {
+class AuthScreenState extends State<AuthScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLogin = true;
   String _enteredEmail = '';
