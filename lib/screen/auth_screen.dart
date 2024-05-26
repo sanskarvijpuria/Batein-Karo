@@ -24,6 +24,7 @@ class AuthScreenState extends State<AuthScreen> {
   XFile? _selectedImage;
   bool _isAuthenticating = false;
   double opacityLevel = 0.0;
+  final TextEditingController _emailController = TextEditingController();
 
   @override
   void initState() {
@@ -35,6 +36,34 @@ class AuthScreenState extends State<AuthScreen> {
 
   void onPickImage(XFile? pickedImage) {
     _selectedImage = pickedImage;
+  }
+
+  void onforget() async {
+    final AuthFunctions authFunctions = AuthFunctions(context);
+    bool isEmailEnteredValid = false;
+    String emailEntered = _emailController.text;
+    if (emailEntered == null ||
+        emailEntered.trim().isEmpty ||
+        !isEmailValid(emailEntered)) {
+      isEmailEnteredValid = false;
+      showSnackBarWithText(
+        context,
+        "Please Enter the valid email addres in Email Address field above.",
+        const Duration(seconds: 3),
+      );
+    } else {
+      isEmailEnteredValid = true;
+    }
+
+    if (isEmailEnteredValid) {
+      authFunctions
+          .forgetPassword(emailEntered)
+          .then((value) => showSnackBarWithText(
+                context,
+                "Lost your PIN? Don't worry, we sent you a secret message to get you back in. Check your email!",
+                const Duration(seconds: 3),
+              ));
+    }
   }
 
   void onSubmit() async {
@@ -147,6 +176,7 @@ class AuthScreenState extends State<AuthScreen> {
                                   _enteredUsername = newValue;
                                 }),
                           TextFormField(
+                            controller: _emailController,
                             decoration: const InputDecoration(
                               labelText: "Email Address",
                             ),
@@ -193,8 +223,23 @@ class AuthScreenState extends State<AuthScreen> {
                                   ),
                                   child: Text(
                                     _isLogin ? "Login" : "Create an Account",
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.9),
                                   ),
                                 ),
+                          if (_isLogin) SizedBox(height: mq.height * 0.001),
+                          if (_isLogin)
+                            TextButton(
+                              onPressed: onforget,
+                              child: Text(
+                                "Forgot Password",
+                                style: TextStyle(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onBackground),
+                              ),
+                            ),
                           SizedBox(height: mq.height * 0.01),
                           TextButton(
                             onPressed: () {
@@ -206,6 +251,9 @@ class AuthScreenState extends State<AuthScreen> {
                               _isLogin
                                   ? "Create new Account"
                                   : "I already have an Account.",
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.9),
                             ),
                           ),
                         ],

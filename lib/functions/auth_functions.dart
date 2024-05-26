@@ -94,4 +94,8 @@ class AuthFunctions {
       }
     }
   }
+
+  Future<void> forgetPassword(String email) async {
+    await auth.sendPasswordResetEmail(email: email);
+  }
 }
