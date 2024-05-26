@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:chat_app/functions/helper.dart';
+import 'package:batein_karo/functions/helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';

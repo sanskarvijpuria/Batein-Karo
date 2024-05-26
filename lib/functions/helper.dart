@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'package:chat_app/functions/APIS.dart';
-import 'package:chat_app/main.dart';
+import 'package:batein_karo/functions/APIS.dart';
+import 'package:batein_karo/main.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';

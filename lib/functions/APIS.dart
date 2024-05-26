@@ -5,13 +5,13 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
-import 'package:chat_app/functions/access_firebase_token.dart';
-import 'package:chat_app/functions/helper.dart';
-import 'package:chat_app/main.dart';
-import 'package:chat_app/models/chat_messages.dart';
-import 'package:chat_app/models/chat_user.dart';
-import 'package:chat_app/models/messages.dart';
-import 'package:chat_app/models/recent_chats.dart';
+import 'package:batein_karo/functions/access_firebase_token.dart';
+import 'package:batein_karo/functions/helper.dart';
+import 'package:batein_karo/main.dart';
+import 'package:batein_karo/models/chat_messages.dart';
+import 'package:batein_karo/models/chat_user.dart';
+import 'package:batein_karo/models/messages.dart';
+import 'package:batein_karo/models/recent_chats.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'
@@ -144,7 +144,7 @@ class APIs {
   }
 
   static Future<bool> checkUsernameExists(String username) async {
-    var data = await db.collection("user_name").doc(username).get();
+    var data = await db.collection("user_names").doc(username).get();
     if (!data.exists) {
       print("Username Does Not exist");
       return false;

@@ -1,4 +1,4 @@
-import 'package:chat_app/screen/user_chat_screen.dart';
+import 'package:batein_karo/screen/user_chat_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
@@ -9,10 +9,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:chat_app/theme/theme_data.dart';
+import 'package:batein_karo/theme/theme_data.dart';
 
-import 'package:chat_app/screen/home_screen.dart';
-import 'package:chat_app/screen/auth_screen.dart';
+import 'package:batein_karo/screen/home_screen.dart';
+import 'package:batein_karo/screen/auth_screen.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 // late Size mq;
@@ -26,9 +26,9 @@ void main() async {
   if (kDebugMode) {
     print("Debugging");
     // Using Firebase local emulator. Comment below lines if you are not using local emulator.
-    await FirebaseAuth.instance.useAuthEmulator('192.168.1.9', 9099);
-    await FirebaseStorage.instance.useStorageEmulator('192.168.1.9', 9199);
-    FirebaseFirestore.instance.useFirestoreEmulator('192.168.1.9', 8080);
+    await FirebaseAuth.instance.useAuthEmulator('192.168.1.8', 9099);
+    await FirebaseStorage.instance.useStorageEmulator('192.168.1.8', 9199);
+    FirebaseFirestore.instance.useFirestoreEmulator('192.168.1.8', 8080);
   }
   runApp(MyApp(widgetsBinding: widgetsBinding));
 }

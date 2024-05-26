@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:chat_app/models/chat_user.dart';
-import 'package:chat_app/screen/to_user_profile_screen.dart';
+import 'package:batein_karo/models/chat_user.dart';
+import 'package:batein_karo/screen/to_user_profile_screen.dart';
 import 'package:flutter/material.dart';
 
 class ProfileDialog extends StatelessWidget {

@@ -1,10 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:chat_app/functions/APIS.dart';
-import 'package:chat_app/functions/helper.dart';
-import 'package:chat_app/models/chat_user.dart';
-import 'package:chat_app/models/recent_chats.dart';
-import 'package:chat_app/screen/user_chat_screen.dart';
-import 'package:chat_app/widgets/home_screen_widgets/profile_dialog.dart';
+import 'package:batein_karo/functions/APIS.dart';
+import 'package:batein_karo/functions/helper.dart';
+import 'package:batein_karo/models/chat_user.dart';
+import 'package:batein_karo/models/recent_chats.dart';
+import 'package:batein_karo/screen/user_chat_screen.dart';
+import 'package:batein_karo/widgets/home_screen_widgets/profile_dialog.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreenChatUserCard extends StatefulWidget {

@@ -1,4 +1,4 @@
-import 'package:chat_app/models/messages.dart';
+import 'package:batein_karo/models/messages.dart';
 
 class Chat {
   String chatId; // Will be hash of two UIDs.

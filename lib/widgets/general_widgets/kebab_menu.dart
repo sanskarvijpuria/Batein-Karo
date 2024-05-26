@@ -1,6 +1,6 @@
-import 'package:chat_app/functions/APIS.dart';
-import 'package:chat_app/screen/profile_screen.dart';
-import 'package:chat_app/widgets/general_widgets/export_dialog.dart';
+import 'package:batein_karo/functions/APIS.dart';
+import 'package:batein_karo/screen/profile_screen.dart';
+import 'package:batein_karo/widgets/general_widgets/export_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 

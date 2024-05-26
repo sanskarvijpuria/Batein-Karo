@@ -1,8 +1,8 @@
-import 'package:chat_app/functions/APIS.dart';
-import 'package:chat_app/models/chat_user.dart';
-import 'package:chat_app/models/recent_chats.dart';
-import 'package:chat_app/screen/home_screen.dart';
-import 'package:chat_app/widgets/home_screen_widgets/home_screen_user_card.dart';
+import 'package:batein_karo/functions/APIS.dart';
+import 'package:batein_karo/models/chat_user.dart';
+import 'package:batein_karo/models/recent_chats.dart';
+import 'package:batein_karo/screen/home_screen.dart';
+import 'package:batein_karo/widgets/home_screen_widgets/home_screen_user_card.dart';
 import 'package:flutter/material.dart';
 
 class RecentChatsList extends StatelessWidget {

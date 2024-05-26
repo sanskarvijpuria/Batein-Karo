@@ -69,7 +69,7 @@ class DefaultFirebaseOptions {
     projectId: 'flutter-chat-by-sanskar',
     databaseURL: 'https://flutter-chat-by-sanskar-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'flutter-chat-by-sanskar.appspot.com',
-    iosBundleId: 'com.example.chatApp',
+    iosBundleId: 'com.skv.bateinKaro',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -79,6 +79,6 @@ class DefaultFirebaseOptions {
     projectId: 'flutter-chat-by-sanskar',
     databaseURL: 'https://flutter-chat-by-sanskar-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'flutter-chat-by-sanskar.appspot.com',
-    iosBundleId: 'com.example.chatApp.RunnerTests',
+    iosBundleId: 'com.skv.bateinKaro.RunnerTests',
   );
 }

@@ -1,8 +1,8 @@
-import 'package:chat_app/functions/export.dart';
-import 'package:chat_app/functions/helper.dart';
-import 'package:chat_app/main.dart';
+import 'package:batein_karo/functions/export.dart';
+import 'package:batein_karo/functions/helper.dart';
+import 'package:batein_karo/main.dart';
 
-import 'package:chat_app/models/chat_user.dart';
+import 'package:batein_karo/models/chat_user.dart';
 
 import 'package:flutter/material.dart';
 

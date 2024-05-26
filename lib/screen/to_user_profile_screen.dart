@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:chat_app/functions/helper.dart';
-import 'package:chat_app/models/chat_user.dart';
-import 'package:chat_app/widgets/general_widgets/photo_viewer.dart';
+import 'package:batein_karo/functions/helper.dart';
+import 'package:batein_karo/models/chat_user.dart';
+import 'package:batein_karo/widgets/general_widgets/photo_viewer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 

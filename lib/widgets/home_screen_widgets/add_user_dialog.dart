@@ -1,10 +1,10 @@
-import 'package:chat_app/functions/APIS.dart';
-import 'package:chat_app/functions/helper.dart';
-import 'package:chat_app/main.dart';
+import 'package:batein_karo/functions/APIS.dart';
+import 'package:batein_karo/functions/helper.dart';
+import 'package:batein_karo/main.dart';
 
-import 'package:chat_app/models/chat_user.dart';
+import 'package:batein_karo/models/chat_user.dart';
 
-import 'package:chat_app/screen/user_chat_screen.dart';
+import 'package:batein_karo/screen/user_chat_screen.dart';
 import 'package:flutter/material.dart';
 
 class AddUserDialog extends StatelessWidget {

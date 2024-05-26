@@ -1,10 +1,10 @@
-import 'package:chat_app/functions/APIS.dart';
-import 'package:chat_app/functions/helper.dart';
-import 'package:chat_app/models/chat_user.dart';
-import 'package:chat_app/models/messages.dart';
-import 'package:chat_app/widgets/message_card_widgets/edit_message_dialog.dart';
-import 'package:chat_app/widgets/message_card_widgets/option_items.dart';
-import 'package:chat_app/widgets/general_widgets/photo_viewer.dart';
+import 'package:batein_karo/functions/APIS.dart';
+import 'package:batein_karo/functions/helper.dart';
+import 'package:batein_karo/models/chat_user.dart';
+import 'package:batein_karo/models/messages.dart';
+import 'package:batein_karo/widgets/message_card_widgets/edit_message_dialog.dart';
+import 'package:batein_karo/widgets/message_card_widgets/option_items.dart';
+import 'package:batein_karo/widgets/general_widgets/photo_viewer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';

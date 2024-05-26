@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.chatApp.RunnerTests</string>
+	<string>com.skv.bateinKaro.RunnerTests</string>
 	<key>PROJECT_ID</key>
 	<string>flutter-chat-by-sanskar</string>
 	<key>STORAGE_BUCKET</key>

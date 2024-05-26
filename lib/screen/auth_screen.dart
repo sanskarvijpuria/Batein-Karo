@@ -1,12 +1,12 @@
-import 'package:chat_app/functions/APIS.dart';
-import 'package:chat_app/main.dart';
+import 'package:batein_karo/functions/APIS.dart';
+import 'package:batein_karo/main.dart';
 import 'package:flutter/material.dart';
 
 import 'package:image_picker/image_picker.dart';
 
-import 'package:chat_app/functions/helper.dart';
-import 'package:chat_app/functions/auth_functions.dart';
-import 'package:chat_app/widgets/auth_screen_widgets/sign_up.dart';
+import 'package:batein_karo/functions/helper.dart';
+import 'package:batein_karo/functions/auth_functions.dart';
+import 'package:batein_karo/widgets/auth_screen_widgets/sign_up.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});

@@ -1,5 +1,5 @@
-import 'package:chat_app/functions/helper.dart';
-import 'package:chat_app/models/messages.dart';
+import 'package:batein_karo/functions/helper.dart';
+import 'package:batein_karo/models/messages.dart';
 
 class Group {
   String groupId;

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'package:chat_app/functions/APIS.dart';
-import 'package:chat_app/functions/helper.dart';
+import 'package:batein_karo/functions/APIS.dart';
+import 'package:batein_karo/functions/helper.dart';
 
 class AuthFunctions {
   AuthFunctions(this.context);
