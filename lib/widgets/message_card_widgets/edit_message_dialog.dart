@@ -82,7 +82,7 @@ class _EditMessageDialogState extends State<EditMessageDialog> {
         ElevatedButton.icon(
           onPressed: () async {
             final String newValue = _textController.value.text.trim();
-            if (newValue != widget.message.content && newValue.isEmpty) {
+            if (newValue != widget.message.content && newValue.isNotEmpty) {
               await APIs.editMessage(
                       widget.hash, widget.message, _textController.value.text)
                   .then((value) {
