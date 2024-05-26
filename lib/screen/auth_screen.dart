@@ -115,6 +115,12 @@ class AuthScreenState extends State<AuthScreen> {
   }
 
   @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     Size mq = MediaQuery.of(context).size;
     print(mq);
