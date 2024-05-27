@@ -25,7 +25,7 @@
 - [Screenshots](#screenshots)
 - [Key Features](#features)
 - [Getting Started](#getting_started)
-- [Project Strcture](#projectstructure)
+- [Project Structure](#projectstructure)
 - [Future Enhancements](#enhancements)
 - [Inspiration and Attribution](#attribution)
 
@@ -77,21 +77,21 @@ To get started quickly and easily, follow these steps:
 
 **Setting Up Firebase:**
 
-1. **Enable Firebase Services:** Within your newly created Firebase project, activate the services you'll be using in the Batein Karo app. Some common choices include Authentication (for user login), Firestore (for storing chat data), and Storage (for media sharing). Refer to the Firebase documentation for guidance on enabling these services:  [https://firebase.google.com/pricing](https://firebase.google.com/pricing)
+1. **Enable Firebase Services:** Within your newly created Firebase project, activate the services you'll be using in the Batein Karo app. Some common choices include Authentication (for user login), Firestore (for storing chat data), and Storage (for media sharing). Refer to the Firebase documentation for guidance on enabling these services:  [https://firebase.google.com/docs](https://firebase.google.com/docs)
 
 2. **Connect Firebase to Flutter:**
-    - Refer to the this documentation for details regarding the below mentioned points:  [https://firebase.google.com/docs/flutter/setup?platform=android](https://firebase.flutter.dev/docs/overview)
+    - Refer to the documentation for details regarding the below-mentioned points:  [https://firebase.google.com/docs/flutter/setup?platform=android](https://firebase.google.com/docs/flutter/setup?platform=android)
     - **Firebase CLI:** Install the Firebase CLI globally using your preferred package manager (e.g., npm or yarn). This tool helps manage your Firebase project from the command line. Refer to the official documentation for installation instructions:  [https://firebase.google.com/docs/cli](https://firebase.google.com/docs/cli).
     - **FlutterFire CLI:** While the Firebase CLI sets up the overall project connection, FlutterFire CLI is a plugin specifically designed for integrating Firebase features within your Flutter app. Use the `flutterfire configure` command to configure FlutterFire for your chosen platforms (Android, iOS, etc.).
 
 **Installing Dependencies:**
 
 - Carefully review the `pubspec.yaml` file within the Batein Karo project. This file lists all the external libraries (packages) required for the app to function.
-- Run the command `flutter pub get` in your terminal to download and install these dependencies.  **Important:** Pay close attention to any compatibility notes or additional setup instructions mentioned on the pub.dev pages of these libraries, especially for specific platforms (Android, iOS, etc.). You might encounter issues if these platform-specific requirements aren't met.
+- Run the command `flutter pub get` in your terminal to download and install these dependencies.  **Important:** Pay close attention to any compatibility notes or additional setup instructions mentioned on the [pub.dev](https://pub.dev/) pages of these libraries, especially for specific platforms (Android, iOS, etc.). You might encounter issues if these platform-specific requirements aren't met.
 
 **Connecting a Device or Emulator:**
 
-Follow Flutter's official documentation to connect a physical device or launch an emulator ([invalid URL removed]). Ensure a compatible device/emulator is ready to receive the app.
+Follow Flutter's official documentation to connect a physical device or launch an emulator. Ensure a compatible device/emulator is ready to receive the app.
 
 **Running the App:**
 
@@ -110,7 +110,7 @@ The Batein Karo codebase is organized using a clear and modular structure:
   - `functions/`: Helper functions for various app functionalities (authentication, API calls, etc.).
   - `models/`: Dart classes representing your chat app's data models (user, message, etc.).
   - `screens/`: Individual screens that make up the app's UI (chat screen, profile screen, etc.).
-  - `widgets/`: Reusable UI components or parts of the screen broken down in different widgets.
+  - `widgets/`: Reusable UI components or parts of the screen broken down into different widgets.
 
 ## 🚀 Future Enhancements <a name = "enhancements"></a>
 
@@ -118,7 +118,7 @@ Batein Karo serves as a solid foundation for a feature-rich chat application. He
 
 - **Group Chats:** Implement functionality for creating and managing group chats, allowing users to communicate with multiple individuals.
 - **Search Functionality:** Integrate a search bar to enable users to quickly search for specific messages, contacts, or content within the app.
-- **State Management:** Consider incorporating a state management solution like Provider, Riverpod, or Bloc to manage complex app state and improve code organization.
+- **State Management:** Consider incorporating a state management solution like Provider, Riverpod, or Bloc to manage complex app states and improve code organization.
 - **Additional Features:** Explore adding features like voice messages, video calls, location sharing, and more to enhance user experience.
 
 ## 🙏 Inspiration and Attribution <a name = "attribution"></a>
@@ -129,6 +129,6 @@ Batein Karo serves as a solid foundation for a feature-rich chat application. He
 
 ## 📌 PS <a name = "ps"></a>
 
-**Pssst! That awesome image at the top?** It's kind of like a cool hat for this README – there to add a little pizazz, but not exactly what the app looks like. Just imagine a boring simple with little fun app under there, waiting to be explored! (I made that image with AI help, just for fun.)
+**Pssst! That awesome image at the top?** It's kind of like a cool hat for this README – there to add a little pizazz, but not exactly what the app looks like. Just imagine a boring simple with a little fun app under there, waiting to be explored! (I made that image with AI help, just for fun.)
 
-**Want to chat more?** I'd love to hear your thoughts on this project or anything Flutter-related! Feel free to connect with me on Linkedin: [Sanskar Vijpuria](https://www.linkedin.com/in/sanskarvijpuria/)
+**Want to chat more?** I'd love to hear your thoughts on this project or anything Flutter-related! Feel free to connect with me on LinkedIn: [Sanskar Vijpuria](https://www.linkedin.com/in/sanskarvijpuria/)
